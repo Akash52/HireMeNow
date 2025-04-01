@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer components {
+    /* Quiz type buttons */
+    .quiz-type-btn {
+      @apply flex flex-col items-center justify-center p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:border-indigo-300 hover:shadow-md;
+    }
+  
+    .quiz-type-btn.active {
+      @apply border-indigo-500 bg-indigo-50 shadow-md;
+    }
+  
+    .quiz-type-btn .icon-container {
+      @apply w-12 h-12 rounded-full flex items-center justify-center mb-2;
+    }
+  
+    /* Difficulty buttons */
+    .difficulty-btn {
+      @apply px-5 py-2 rounded-lg border border-gray-200 transition-all duration-200 hover:border-indigo-300;
+    }
+  
+    .difficulty-btn.active {
+      @apply border-indigo-500 bg-indigo-50 font-medium text-indigo-700;
+    }
+  
+    /* Option buttons */
+    .option-btn {
+      @apply w-full text-left p-4 border border-gray-300 rounded-lg transition-all duration-200 hover:bg-indigo-50 hover:border-indigo-300 hover:transform hover:scale-[1.01] hover:shadow-md;
+    }
+  
+    .option-btn:disabled {
+      @apply cursor-not-allowed opacity-80;
+    }
+  
+    .correct-answer {
+      @apply bg-green-100 border-green-500 text-green-800;
+    }
+  
+    .incorrect-answer {
+      @apply bg-red-100 border-red-500 text-red-800;
+    }
+  
+    /* Toast notifications */
+    .toast {
+      @apply bg-gray-800 text-white px-4 py-2 rounded shadow-lg mb-2 animate-fade-in;
+    }
+  
+    .toast.success {
+      @apply bg-green-600;
+    }
+  
+    .toast.error {
+      @apply bg-red-600;
+    }
+  
+    /* Review question styles */
+    .review-question {
+      @apply p-4 border border-gray-200 rounded-lg;
+    }
+  
+    .review-question.correct {
+      @apply border-green-200 bg-green-50;
+    }
+  
+    .review-question.incorrect {
+      @apply border-red-200 bg-red-50;
+    }
+  
+    /* Performance chart styles */
+    .performance-bar {
+      @apply h-4 rounded-full bg-gray-200 overflow-hidden;
+    }
+  
+    .performance-bar-fill {
+      @apply h-full rounded-full;
+    }
+  
+    .performance-bar-fill.good {
+      @apply bg-green-500;
+    }
+  
+    .performance-bar-fill.average {
+      @apply bg-yellow-500;
+    }
+  
+    .performance-bar-fill.poor {
+      @apply bg-red-500;
+    }
+  }
+  
+  /* Progress bar animation */
+  #progress-bar {
+    transition: width 0.5s ease-in-out;
+  }
