@@ -2,96 +2,361 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @layer components {
-    /* Quiz type buttons */
-    .quiz-type-btn {
-      @apply flex flex-col items-center justify-center p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:border-indigo-300 hover:shadow-md;
-    }
-  
-    .quiz-type-btn.active {
-      @apply border-indigo-500 bg-indigo-50 shadow-md;
-    }
-  
-    .quiz-type-btn .icon-container {
-      @apply w-12 h-12 rounded-full flex items-center justify-center mb-2;
-    }
-  
-    /* Difficulty buttons */
-    .difficulty-btn {
-      @apply px-5 py-2 rounded-lg border border-gray-200 transition-all duration-200 hover:border-indigo-300;
-    }
-  
-    .difficulty-btn.active {
-      @apply border-indigo-500 bg-indigo-50 font-medium text-indigo-700;
-    }
-  
-    /* Option buttons */
-    .option-btn {
-      @apply w-full text-left p-4 border border-gray-300 rounded-lg transition-all duration-200 hover:bg-indigo-50 hover:border-indigo-300 hover:transform hover:scale-[1.01] hover:shadow-md;
-    }
-  
-    .option-btn:disabled {
-      @apply cursor-not-allowed opacity-80;
-    }
-  
-    .correct-answer {
-      @apply bg-green-100 border-green-500 text-green-800;
-    }
-  
-    .incorrect-answer {
-      @apply bg-red-100 border-red-500 text-red-800;
-    }
-  
-    /* Toast notifications */
-    .toast {
-      @apply bg-gray-800 text-white px-4 py-2 rounded shadow-lg mb-2 animate-fade-in;
-    }
-  
-    .toast.success {
-      @apply bg-green-600;
-    }
-  
-    .toast.error {
-      @apply bg-red-600;
-    }
-  
-    /* Review question styles */
-    .review-question {
-      @apply p-4 border border-gray-200 rounded-lg;
-    }
-  
-    .review-question.correct {
-      @apply border-green-200 bg-green-50;
-    }
-  
-    .review-question.incorrect {
-      @apply border-red-200 bg-red-50;
-    }
-  
-    /* Performance chart styles */
-    .performance-bar {
-      @apply h-4 rounded-full bg-gray-200 overflow-hidden;
-    }
-  
-    .performance-bar-fill {
-      @apply h-full rounded-full;
-    }
-  
-    .performance-bar-fill.good {
-      @apply bg-green-500;
-    }
-  
-    .performance-bar-fill.average {
-      @apply bg-yellow-500;
-    }
-  
-    .performance-bar-fill.poor {
-      @apply bg-red-500;
-    }
+  /* Quiz type buttons */
+  .quiz-type-btn {
+    @apply flex flex-col items-center justify-center p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:border-indigo-300 hover:shadow-md;
   }
-  
-  /* Progress bar animation */
-  #progress-bar {
-    transition: width 0.5s ease-in-out;
+
+  .quiz-type-btn.active {
+    @apply border-indigo-500 bg-indigo-50 shadow-md;
   }
+
+  .quiz-type-btn .icon-container {
+    @apply w-12 h-12 rounded-full flex items-center justify-center mb-2;
+  }
+
+  /* Difficulty buttons */
+  .difficulty-btn {
+    @apply px-5 py-2 rounded-lg border border-gray-200 transition-all duration-200 hover:border-indigo-300;
+  }
+
+  .difficulty-btn.active {
+    @apply border-indigo-500 bg-indigo-50 font-medium text-indigo-700;
+  }
+
+  /* Option buttons */
+  .option-btn {
+    @apply w-full text-left p-4 border border-gray-300 rounded-lg transition-all duration-200 hover:bg-indigo-50 hover:border-indigo-300 hover:transform hover:scale-[1.01] hover:shadow-md;
+  }
+
+  .option-btn:disabled {
+    @apply cursor-not-allowed opacity-80;
+  }
+
+  .correct-answer {
+    @apply bg-green-100 border-green-500 text-green-800;
+  }
+
+  .incorrect-answer {
+    @apply bg-red-100 border-red-500 text-red-800;
+  }
+
+  /* Toast notifications */
+  .toast {
+    @apply bg-gray-800 text-white px-4 py-2 rounded shadow-lg mb-2 animate-fade-in;
+  }
+
+  .toast.success {
+    @apply bg-green-600;
+  }
+
+  .toast.error {
+    @apply bg-red-600;
+  }
+
+  /* Review question styles */
+  .review-question {
+    @apply p-4 border border-gray-200 rounded-lg;
+  }
+
+  .review-question.correct {
+    @apply border-green-200 bg-green-50;
+  }
+
+  .review-question.incorrect {
+    @apply border-red-200 bg-red-50;
+  }
+
+  /* Performance chart styles */
+  .performance-bar {
+    @apply h-4 rounded-full bg-gray-200 overflow-hidden;
+  }
+
+  .performance-bar-fill {
+    @apply h-full rounded-full;
+  }
+
+  .performance-bar-fill.good {
+    @apply bg-green-500;
+  }
+
+  .performance-bar-fill.average {
+    @apply bg-yellow-500;
+  }
+
+  .performance-bar-fill.poor {
+    @apply bg-red-500;
+  }
+}
+
+/* Progress bar animation */
+#progress-bar {
+  transition: width 0.5s ease-in-out;
+}
+
+.quiz-paused {
+  position: relative;
+}
+
+.quiz-paused::after {
+  content: 'PAUSED';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-size: 32px;
+  font-weight: bold;
+  color: rgba(79, 70, 229, 0.7);
+  border: 4px solid rgba(79, 70, 229, 0.7);
+  padding: 10px 20px;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.quiz-paused #options-container button {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+/* Interview Preparation Module - Professional Design Enhancement */
+
+/* Interview layout and container styles */
+.interview-container {
+  @apply bg-gradient-to-br from-white to-indigo-50 rounded-2xl shadow-xl border border-indigo-100 overflow-hidden;
+}
+
+.interview-sidebar {
+  @apply bg-white shadow-lg rounded-lg overflow-hidden;
+}
+
+.interview-main-content {
+  @apply bg-white shadow-lg rounded-lg overflow-hidden;
+}
+
+/* Topic navigation enhancements */
+
+/* Add this to your style section in index.html or to src/tailwind.css */
+.topic-btn {
+  @apply flex items-center rounded-lg px-4 py-3 mb-1 transition-all duration-200 font-medium;
+  position: relative;
+}
+
+/* Section styling */
+.interview-section {
+  @apply mb-10 rounded-xl overflow-hidden;
+}
+
+.interview-section-header {
+  @apply flex items-center py-4 px-6 bg-indigo-700 text-white;
+}
+
+.interview-section-title {
+  @apply text-xl font-bold tracking-wide;
+}
+
+.interview-section-content {
+  @apply bg-white p-2;
+}
+
+/* Question card styling */
+.interview-item {
+  @apply bg-white mb-4 rounded-xl border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-lg;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.interview-item:hover {
+  @apply border-indigo-300;
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.1);
+}
+
+.interview-item-header {
+  @apply flex justify-between items-center p-5 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100;
+}
+
+.interview-question {
+  @apply font-medium text-lg text-gray-800 leading-relaxed flex-1 pr-4;
+}
+
+.toggle-answer {
+  @apply flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200;
+  @apply bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white;
+}
+
+.toggle-answer:focus {
+  @apply outline-none ring-2 ring-indigo-300;
+}
+
+/* Answer content styling */
+.answer-content {
+  @apply p-5 bg-white transition-all duration-300;
+}
+
+.answer-content.fade-in {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.answer-content.fade-out {
+  animation: fadeOutDown 0.3s ease-in;
+}
+
+/* Enhanced code examples */
+.code-example {
+  @apply relative rounded-lg overflow-hidden my-4 shadow-md;
+}
+
+.code-example:before {
+  @apply absolute top-0 right-0 px-3 py-1 text-xs font-mono font-medium bg-gray-800 text-white rounded-bl-md z-10;
+  content: attr(data-language);
+}
+
+.code-block-container {
+  @apply bg-gray-900 rounded-lg overflow-hidden border border-gray-700 my-4 shadow-lg;
+}
+
+.code-block-container pre {
+  @apply m-0 p-0;
+}
+
+.code-block-container code {
+  @apply block p-5 font-mono text-sm leading-relaxed overflow-x-auto;
+}
+
+/* Copy code button */
+.copy-code-btn {
+  @apply absolute top-2 right-2 p-2 bg-gray-700 text-gray-300 rounded-md opacity-0 transition-opacity duration-200;
+}
+
+.code-example:hover .copy-code-btn {
+  @apply opacity-100;
+}
+
+.copy-code-btn:hover {
+  @apply bg-gray-600 text-white;
+}
+
+/* Pro tips section */
+.tips {
+  @apply mt-5 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-l-4 border-indigo-400 shadow-sm;
+}
+
+.tips h5 {
+  @apply flex items-center font-semibold text-indigo-800 mb-3;
+}
+
+.tips h5:before {
+  content: '\f0eb'; /* Light bulb icon */
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  @apply mr-2 text-yellow-500;
+}
+
+.tips ul {
+  @apply space-y-2;
+}
+
+.tips ul li {
+  @apply text-gray-700 leading-relaxed;
+}
+
+/* Category labels */
+.category-label {
+  @apply inline-block px-3 py-1 text-xs font-medium rounded-full mr-2;
+}
+
+.category-label.beginner {
+  @apply bg-green-100 text-green-800;
+}
+
+.category-label.intermediate {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.category-label.advanced {
+  @apply bg-red-100 text-red-800;
+}
+
+/* Related questions section */
+.related-questions {
+  @apply mt-6 pt-4 border-t border-gray-200;
+}
+
+.related-question-link {
+  @apply block py-2 px-4 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors duration-200;
+}
+
+/* Enhanced animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Add a progress tracking indicator for completed items */
+.topic-progress {
+  @apply mt-6 mb-4 px-4;
+}
+
+.progress-circle {
+  @apply flex items-center justify-center rounded-full w-7 h-7 text-xs font-bold bg-gray-200 text-gray-600 transition-all duration-300;
+}
+
+.progress-circle.completed {
+  @apply bg-green-500 text-white;
+}
+
+/* Search functionality */
+.interview-search {
+  @apply relative mb-6;
+}
+
+.interview-search input {
+  @apply w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 transition-all duration-200;
+}
+
+.interview-search:before {
+  content: '\f002';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  @apply absolute left-3 top-1/2 -translate-y-1/2 text-gray-400;
+}
+
+/* Bookmarks and favorite questions */
+.bookmark-btn {
+  @apply ml-2 p-2 text-gray-400 hover:text-yellow-500 transition-colors duration-200;
+}
+
+.bookmark-btn.active {
+  @apply text-yellow-500;
+}
+
+.help-button {
+  @apply text-indigo-600 hover:text-indigo-800 text-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-full p-1;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+}
+
+/* For dark mode */
+.dark .help-button {
+  @apply text-indigo-400 hover:text-indigo-300;
+}

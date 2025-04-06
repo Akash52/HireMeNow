@@ -1,218 +1,1428 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HireMeNow - Interview Prep Quiz</title>
-  <meta name="description" content="Ace your next interview with HireMeNow quiz app" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <meta name="theme-color" content="#4F46E5">
-  <link rel="stylesheet" href="/src/tailwind.css">
-  <link rel="icon" href="/favicon.ico">
-</head>
-<body class="bg-gradient-to-br from-indigo-50 to-blue-50 min-h-screen font-inter">
-  <div class="container mx-auto px-4 sm:px-6 py-4 max-w-3xl">
-    <header class="py-4 sm:py-8 mb-4 sm:mb-8 text-center">
-      <div class="flex justify-center items-center mb-3">
-        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 text-white rounded-lg flex items-center justify-center mr-2">
-          <!-- Icon placeholder -->
-          <span class="font-bold">Q</span>
-        </div>
-        <h1 class="text-2xl sm:text-3xl font-bold text-indigo-900">HireMeNow Quiz</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Enhanced mobile viewport settings -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#4F46E5" />
+
+    <!-- Enhanced SEO Meta Tags -->
+    <title>HireMeNow - Ace Your Technical Interview | Interview Preparation Platform</title>
+    <meta
+      name="description"
+      content="Prepare for your next tech interview with HireMeNow - Interactive quizzes on JavaScript, React, TypeScript, Node.js, algorithms, and more. Boost your interview confidence today."
+    />
+    <meta
+      name="keywords"
+      content="interview preparation, coding interview, JavaScript quiz, React interview, technical interview, developer interview, programming interview questions"
+    />
+    <meta name="author" content="HireMeNow" />
+
+    <!-- Open Graph / Facebook Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://hiremenow.example.com/" />
+    <meta property="og:title" content="HireMeNow - Interactive Tech Interview Preparation" />
+    <meta
+      property="og:description"
+      content="Ace your next tech interview with our interactive quizzes covering JavaScript, React, TypeScript, Node.js, and more."
+    />
+    <meta
+      property="og:image"
+      content="https://hiremenow.example.com/images/hiremenow-social-preview.jpg"
+    />
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://hiremenow.example.com/" />
+    <meta name="twitter:title" content="HireMeNow - Ace Your Tech Interview" />
+    <meta
+      name="twitter:description"
+      content="Practice with interactive quizzes on JavaScript, React, TypeScript, Node.js, algorithms, and land your dream job."
+    />
+    <meta
+      name="twitter:image"
+      content="https://hiremenow.example.com/images/hiremenow-twitter-card.jpg"
+    />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://hiremenow.example.com/" />
+
+    <!-- Added Google Material Icons for iOS-like symbols -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+    />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/src/tailwind.css" />
+
+    <!-- Favicon and App Icons -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+  </head>
+  <body
+    class="bg-gradient-to-br from-indigo-50 via-blue-50 to-white font-inter text-gray-800 antialiased relative overflow-x-hidden pb-safe"
+  >
+    <!-- Animated SVG Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+      <!-- Left top corner animated blob -->
+      <div class="absolute -top-32 -left-32 animate-float-slow opacity-15">
+        <svg width="400" height="400" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(300,300)">
+            <path
+              d="M120,-157.6C152.7,-141.5,174.8,-102.6,184.8,-62.8C194.8,-23,192.7,17.9,181.6,56.5C170.5,95.2,150.4,131.6,119.9,162.2C89.3,192.8,48.4,217.6,2.4,214.5C-43.6,211.4,-94.8,180.4,-141.7,144.6C-188.6,108.8,-231.2,68.1,-232.2,25.9C-233.1,-16.2,-192.4,-59.8,-156.7,-96.7C-121,-133.7,-90.3,-164,-54.8,-177C-19.3,-189.9,21,-190.5,60.8,-181C100.6,-171.5,140,-173.8,120,-157.6Z"
+              fill="#4F46E5"
+            />
+          </g>
+        </svg>
       </div>
-      <p class="mt-1 sm:mt-2 text-sm sm:text-base text-indigo-700">Ace your interview with confidence</p>
-      
-      <!-- Added font size controls -->
-      <div class="font-size-controls mt-2 flex justify-center">
-        <button id="decrease-font" aria-label="Decrease font size" class="px-2 py-1 text-xs bg-white border border-gray-300 rounded-l-md hover:bg-gray-100">A-</button>
-        <button id="increase-font" aria-label="Increase font size" class="px-2 py-1 text-xs bg-white border border-gray-300 rounded-r-md hover:bg-gray-100">A+</button>
+
+      <!-- Right bottom corner animated blob -->
+      <div class="absolute -bottom-48 -right-48 animate-float-medium opacity-10">
+        <svg width="600" height="600" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(300,300)">
+            <path
+              d="M148.7,-234.3C191.2,-199.7,223.6,-158.6,239.4,-112.5C255.3,-66.4,254.6,-15.3,242.9,30.5C231.2,76.3,208.6,116.9,176.6,148.5C144.7,180,103.4,202.6,57.6,217.7C11.7,232.7,-38.7,240.3,-81.5,228C-124.3,215.7,-159.5,183.6,-191.4,147.8C-223.2,112,-251.6,72.5,-258.9,28.4C-266.2,-15.7,-252.4,-64.4,-228.5,-108.5C-204.6,-152.6,-170.5,-192,-131.1,-224.7C-91.8,-257.4,-45.9,-283.2,1.9,-285.9C49.8,-288.6,106.1,-268.9,148.7,-234.3Z"
+              fill="#818CF8"
+            />
+          </g>
+        </svg>
+      </div>
+
+      <!-- Middle animated circles -->
+      <div class="absolute top-1/3 right-1/4 animate-pulse-slow opacity-20">
+        <svg width="120" height="120" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="100" cy="100" r="80" fill="#4F46E5" />
+        </svg>
+      </div>
+
+      <div
+        class="absolute top-3/4 left-1/4 animate-pulse-slow opacity-10"
+        style="animation-delay: 1s"
+      >
+        <svg width="160" height="160" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="100" cy="100" r="80" fill="#818CF8" />
+        </svg>
+      </div>
+
+      <!-- Floating particles -->
+      <div class="particles-container absolute inset-0">
+        <!-- Small floating dots/particles -->
+        <div class="particle particle-1"></div>
+        <div class="particle particle-2"></div>
+        <div class="particle particle-3"></div>
+        <div class="particle particle-4"></div>
+        <div class="particle particle-5"></div>
+        <div class="particle particle-6"></div>
+        <div class="particle particle-7"></div>
+        <div class="particle particle-8"></div>
+        <div class="particle particle-9"></div>
+        <div class="particle particle-10"></div>
+      </div>
+
+      <!-- Animated gradient wave -->
+      <div class="absolute bottom-0 left-0 right-0 h-64 opacity-20">
+        <svg
+          class="wave-animation"
+          viewBox="0 0 1440 320"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="none"
+        >
+          <path
+            class="wave-path"
+            fill="#4F46E5"
+            fill-opacity="1"
+            d="M0,192L48,170.7C96,149,192,107,288,112C384,117,480,171,576,192C672,213,768,203,864,176C960,149,1056,107,1152,96C1248,85,1344,107,1392,117.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          ></path>
+        </svg>
+      </div>
+
+      <!-- Animated grid overlay - subtle tech pattern -->
+      <div class="absolute inset-0 bg-grid-pattern opacity-[0.015] pointer-events-none"></div>
+    </div>
+
+    <!-- Enhanced iOS-style header with semantic HTML -->
+    <header
+      class="fixed top-0 left-0 right-0 bg-gradient-to-r from-indigo-600/95 via-indigo-700/95 to-indigo-800/95 backdrop-blur-md py-3 shadow-lg z-30 h-auto border-b border-indigo-500/30 pt-safe"
+    >
+      <div class="container mx-auto px-4 sm:px-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <div
+              class="h-10 w-10 sm:h-12 sm:w-12 bg-white rounded-xl flex items-center justify-center shadow-md mr-3 transform transition-transform hover:scale-105 active:scale-95"
+            >
+              <span
+                class="bg-gradient-to-br from-indigo-600 to-indigo-800 text-transparent bg-clip-text font-bold text-xl sm:text-2xl"
+                aria-hidden="true"
+                >H</span
+              >
+            </div>
+            <div>
+              <h1 class="text-xl sm:text-3xl font-bold text-white tracking-tight ios-text">
+                HireMeNow
+              </h1>
+              <p class="text-xs sm:text-base text-indigo-100 tracking-wide">
+                Ace your interview with confidence
+              </p>
+            </div>
+          </div>
+
+          <!-- Mobile-optimized navigation buttons with accessibility improvements -->
+          <nav class="theme-toggle-container" aria-label="Main Navigation">
+            <div class="flex justify-center">
+              <div
+                class="inline-flex bg-indigo-900/40 p-1 rounded-xl shadow-inner border border-indigo-500/30 nav-tab-group"
+                role="tablist"
+              >
+                <button
+                  id="nav-quiz"
+                  class="nav-btn active px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-300 flex items-center gap-1.5 sm:gap-2"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="quiz-container"
+                >
+                  <i class="material-icons-round text-base sm:text-lg" aria-hidden="true">quiz</i>
+                  <span class="hidden xs:inline">Quiz</span>
+                </button>
+                <button
+                  id="nav-interview"
+                  class="nav-btn px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-300 flex items-center gap-1.5 sm:gap-2"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="interview-container"
+                >
+                  <i class="material-icons-round text-base sm:text-lg" aria-hidden="true">person</i>
+                  <span class="hidden xs:inline">Interview</span>
+                </button>
+                <button
+                  id="help-icon"
+                  class="nav-btn px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-300 flex items-center gap-1.5 sm:gap-2"
+                  role="tab"
+                  aria-selected="false"
+                >
+                  <i class="material-icons-round text-base sm:text-lg" aria-hidden="true">help</i>
+                  <span class="hidden xs:inline">Help</span>
+                </button>
+              </div>
+            </div>
+          </nav>
+        </div>
       </div>
     </header>
-    
-    <div id="quiz-container" class="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl p-4 sm:p-8 transition-all duration-300 hover:shadow-xl sm:hover:shadow-2xl">
-      <!-- Quiz content will be inserted here by JavaScript -->
-      <div id="start-screen" class="text-center">
-        <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-indigo-900">Ready to begin?</h2>
-        
-        <div class="mb-6 sm:mb-8">
-          <p class="mb-3 sm:mb-4 text-sm sm:text-base text-gray-700">Select a quiz topic to test your knowledge:</p>
-          
-          <div class="grid grid-cols-2 gap-2 sm:gap-3 max-w-md mx-auto">
-            <button class="quiz-type-btn active flex flex-col items-center justify-center p-2 sm:p-3 rounded-lg border-2 border-transparent bg-indigo-50 hover:bg-indigo-100 transition-colors text-sm sm:text-base" data-type="js">
-              <div class="icon-container bg-yellow-100 w-8 h-8 rounded-full flex items-center justify-center mb-1">
-                <span class="text-yellow-600 font-bold text-xs sm:text-sm">JS</span>
-              </div>
-              <span>JavaScript</span>
-            </button>
-            
-            <button class="quiz-type-btn flex flex-col items-center justify-center p-2 sm:p-3 rounded-lg border-2 border-transparent hover:bg-indigo-100 transition-colors text-sm sm:text-base" data-type="ts">
-              <div class="icon-container bg-blue-100 w-8 h-8 rounded-full flex items-center justify-center mb-1">
-                <span class="text-blue-600 font-bold text-xs sm:text-sm">TS</span>
-              </div>
-              <span>TypeScript</span>
-            </button>
-            
-            <button class="quiz-type-btn flex flex-col items-center justify-center p-2 sm:p-3 rounded-lg border-2 border-transparent hover:bg-indigo-100 transition-colors text-sm sm:text-base" data-type="react">
-              <div class="icon-container bg-cyan-100 w-8 h-8 rounded-full flex items-center justify-center mb-1">
-                <span class="text-cyan-600 font-bold text-xs sm:text-sm">R</span>
-              </div>
-              <span>React</span>
-            </button>
-            
-            <button class="quiz-type-btn flex flex-col items-center justify-center p-2 sm:p-3 rounded-lg border-2 border-transparent hover:bg-indigo-100 transition-colors text-sm sm:text-base" data-type="node">
-              <div class="icon-container bg-green-100 w-8 h-8 rounded-full flex items-center justify-center mb-1">
-                <span class="text-green-600 font-bold text-xs sm:text-sm">N</span>
-              </div>
-              <span>Node.js</span>
-            </button>
-            
-            <button class="quiz-type-btn flex flex-col items-center justify-center p-2 sm:p-3 rounded-lg border-2 border-transparent hover:bg-indigo-100 transition-colors text-sm sm:text-base" data-type="html">
-              <div class="icon-container bg-orange-100 w-8 h-8 rounded-full flex items-center justify-center mb-1">
-                <span class="text-orange-600 font-bold text-xs sm:text-sm">H5</span>
-              </div>
-              <span>HTML/CSS</span>
-            </button>
-            
-            <button class="quiz-type-btn flex flex-col items-center justify-center p-2 sm:p-3 rounded-lg border-2 border-transparent hover:bg-indigo-100 transition-colors text-sm sm:text-base" data-type="algo">
-              <div class="icon-container bg-purple-100 w-8 h-8 rounded-full flex items-center justify-center mb-1">
-                <span class="text-purple-600 font-bold text-xs sm:text-sm">A</span>
-              </div>
-              <span>Algorithms</span>
-            </button>
+
+    <!-- Mobile-optimized main content with semantic HTML -->
+    <main
+      class="container mx-auto px-4 sm:px-6 pt-24 pb-20 min-h-screen relative z-10 overflow-x-hidden mobile-container"
+    >
+      <!-- Quiz container with improved shadow and effects -->
+      <section
+        id="quiz-container"
+        class="bg-white/90 backdrop-blur-md rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 p-4 sm:p-10 transition-all duration-500 hover:shadow-[0_20px_50px_rgb(79,70,229,0.08)] mb-20 ios-card"
+      >
+        <div id="start-screen" class="text-center">
+          <div class="mb-8 sm:mb-10">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-2 text-indigo-900 tracking-tight">
+              Ready to test your skills?
+            </h2>
+            <p class="text-base sm:text-lg text-gray-600 max-w-lg mx-auto">
+              Challenge yourself with our curated questions and boost your interview performance
+            </p>
           </div>
-        </div>
-        
-        <div class="mb-6 sm:mb-8">
-          <p class="mb-3 sm:mb-4 text-sm sm:text-base text-gray-700">Choose difficulty level:</p>
-          <div class="flex flex-wrap justify-center gap-2 sm:gap-4">
-            <button class="difficulty-btn active px-4 py-2 rounded-full border-2 border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700 hover:border-indigo-700 transition-colors text-sm sm:text-base" data-level="easy">
-              <span>Easy</span>
-            </button>
-            <button class="difficulty-btn px-4 py-2 rounded-full border-2 border-indigo-300 text-indigo-600 hover:bg-indigo-50 transition-colors text-sm sm:text-base" data-level="medium">
-              <span>Medium</span>
-            </button>
-            <button class="difficulty-btn px-4 py-2 rounded-full border-2 border-indigo-300 text-indigo-600 hover:bg-indigo-50 transition-colors text-sm sm:text-base" data-level="hard">
-              <span>Hard</span>
-            </button>
-          </div>
-        </div>
-        
-        <button id="start-button" class="w-full sm:w-auto px-5 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-          Start Quiz
-        </button>
-      </div>
-      
-      <div id="question-screen" class="hidden animate-fade-in">
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
-          <div class="flex items-center">
-            <div id="timer-display" class="text-base sm:text-lg font-semibold text-indigo-700 mb-2 sm:mb-0">
-              Time: 30s
+
+          <!-- Topic Selection with Improved Cards for mobile -->
+          <div class="mb-8 sm:mb-12">
+            <div class="flex items-center justify-center mb-5">
+              <div
+                class="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent w-full max-w-xs"
+              ></div>
+              <h3
+                class="text-sm sm:text-lg font-semibold text-gray-800 px-2 sm:px-4 ios-section-title"
+              >
+                SELECT A TOPIC
+              </h3>
+              <div
+                class="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent w-full max-w-xs"
+              ></div>
             </div>
-            <!-- Added pause button -->
-            <button id="pause-button" data-state="running" aria-label="Pause quiz" class="ml-2 px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-100">
-              <i class="fas fa-pause"></i> Pause
+
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4 max-w-2xl mx-auto">
+              <!-- JavaScript Button with iOS-style tap feedback -->
+              <button
+                id="js-btn"
+                class="quiz-type-btn active flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border bg-gradient-to-br from-indigo-50 to-white hover:from-indigo-100 hover:to-indigo-50 transition-all duration-300 ios-button"
+                data-type="js"
+              >
+                <div
+                  class="icon-container bg-yellow-100 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-2 shadow-sm"
+                >
+                  <svg
+                    fill="none"
+                    height="2500"
+                    width="2183"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 124 141.53199999999998"
+                    class="w-6 h-6 sm:w-7 sm:h-7"
+                  >
+                    <path
+                      d="M10.383 126.894L0 0l124 .255-10.979 126.639-50.553 14.638z"
+                      fill="#e9ca32"
+                    />
+                    <path d="M62.468 129.277V12.085l51.064.17-9.106 104.851z" fill="#ffde25" />
+                    <path
+                      d="M57 26H43.5v78L33 102V91.5l-12.5-2V113l36.5 9.5zm10.127 0H104.5L102 40.95H81.394v24.533H102L99.5 115l-32.373 7.5V107L89 99.5 90.263 79l-23.136 3.35z"
+                      fill="#fff"
+                    />
+                  </svg>
+                </div>
+                <span class="font-medium text-sm sm:text-base">JavaScript</span>
+              </button>
+
+              <!-- TypeScript Button -->
+              <button
+                class="quiz-type-btn flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border border-gray-200 hover:border-indigo-200 bg-white hover:bg-indigo-50/30 transition-all duration-300 ios-button"
+                data-type="ts"
+              >
+                <div
+                  class="icon-container bg-blue-100 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-2 shadow-sm"
+                >
+                  <svg
+                    id="Layer_1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 400 400"
+                    class="w-6 h-6 sm:w-7 sm:h-7"
+                  >
+                    <style>
+                      .st0 {
+                        fill: #007acc;
+                      }
+                      .st1 {
+                        fill: #fff;
+                      }
+                    </style>
+                    <path class="st0" d="M0 200V0h400v400H0" />
+                    <path
+                      class="st1"
+                      d="M87.7 200.7V217h52v148h36.9V217h52v-16c0-9 0-16.3-.4-16.5 0-.3-31.7-.4-70.2-.4l-70 .3v16.4l-.3-.1zM321.4 184c10.2 2.4 18 7 25 14.3 3.7 4 9.2 11 9.6 12.8 0 .6-17.3 12.3-27.8 18.8-.4.3-2-1.4-3.6-4-5.2-7.4-10.5-10.6-18.8-11.2-12-.8-20 5.5-20 16 0 3.2.6 5 1.8 7.6 2.7 5.5 7.7 8.8 23.2 15.6 28.6 12.3 41 20.4 48.5 32 8.5 13 10.4 33.4 4.7 48.7-6.4 16.7-22 28-44.3 31.7-7 1.2-23 1-30.5-.3-16-3-31.3-11-40.7-21.3-3.7-4-10.8-14.7-10.4-15.4l3.8-2.4 15-8.7 11.3-6.6 2.6 3.5c3.3 5.2 10.7 12.2 15 14.6 13 6.7 30.4 5.8 39-2 3.7-3.4 5.3-7 5.3-12 0-4.6-.7-6.7-3-10.2-3.2-4.4-9.6-8-27.6-16-20.7-8.8-29.5-14.4-37.7-23-4.7-5.2-9-13.3-11-20-1.5-5.8-2-20-.6-25.7 4.3-20 19.4-34 41-38 7-1.4 23.5-.8 30.4 1l-.2.2z"
+                    />
+                  </svg>
+                </div>
+                <span class="font-medium text-sm sm:text-base">TypeScript</span>
+              </button>
+
+              <!-- React Button -->
+              <button
+                class="quiz-type-btn flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border border-gray-200 hover:border-indigo-200 bg-white hover:bg-indigo-50/30 transition-all duration-300 ios-button"
+                data-type="react"
+              >
+                <div
+                  class="icon-container bg-cyan-100 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-2 shadow-sm"
+                >
+                  <svg
+                    height="2500"
+                    viewBox="175.7 78 490.6 436.9"
+                    width="2194"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-6 h-6 sm:w-7 sm:h-7"
+                  >
+                    <g fill="#61dafb">
+                      <path
+                        d="m666.3 296.5c0-32.5-40.7-63.3-103.1-82.4 14.4-63.6 8-114.2-20.2-130.4-6.5-3.8-14.1-5.6-22.4-5.6v22.3c4.6 0 8.3.9 11.4 2.6 13.6 7.8 19.5 37.5 14.9 75.7-1.1 9.4-2.9 19.3-5.1 29.4-19.6-4.8-41-8.5-63.5-10.9-13.5-18.5-27.5-35.3-41.6-50 32.6-30.3 63.2-46.9 84-46.9v-22.3c-27.5 0-63.5 19.6-99.9 53.6-36.4-33.8-72.4-53.2-99.9-53.2v22.3c20.7 0 51.4 16.5 84 46.6-14 14.7-28 31.4-41.3 49.9-22.6 2.4-44 6.1-63.6 11-2.3-10-4-19.7-5.2-29-4.7-38.2 1.1-67.9 14.6-75.8 3-1.8 6.9-2.6 11.5-2.6v-22.3c-8.4 0-16 1.8-22.6 5.6-28.1 16.2-34.4 66.7-19.9 130.1-62.2 19.2-102.7 49.9-102.7 82.3 0 32.5 40.7 63.3 103.1 82.4-14.4 63.6-8 114.2 20.2 130.4 6.5 3.8 14.1 5.6 22.5 5.6 27.5 0 63.5-19.6 99.9-53.6 36.4 33.8 72.4 53.2 99.9 53.2 8.4 0 16-1.8 22.6-5.6 28.1-16.2 34.4-66.7 19.9-130.1 62-19.1 102.5-49.9 102.5-82.3zm-130.2-66.7c-3.7 12.9-8.3 26.2-13.5 39.5-4.1-8-8.4-16-13.1-24-4.6-8-9.5-15.8-14.4-23.4 14.2 2.1 27.9 4.7 41 7.9zm-45.8 106.5c-7.8 13.5-15.8 26.3-24.1 38.2-14.9 1.3-30 2-45.2 2-15.1 0-30.2-.7-45-1.9-8.3-11.9-16.4-24.6-24.2-38-7.6-13.1-14.5-26.4-20.8-39.8 6.2-13.4 13.2-26.8 20.7-39.9 7.8-13.5 15.8-26.3 24.1-38.2 14.9-1.3 30-2 45.2-2 15.1 0 30.2.7 45 1.9 8.3 11.9 16.4 24.6 24.2 38 7.6 13.1 14.5 26.4 20.8 39.8-6.3 13.4-13.2 26.8-20.7 39.9zm32.3-13c5.4 13.4 10 26.8 13.8 39.8-13.1 3.2-26.9 5.9-41.2 8 4.9-7.7 9.8-15.6 14.4-23.7 4.6-8 8.9-16.1 13-24.1zm-101.4 106.7c-9.3-9.6-18.6-20.3-27.8-32 9 .4 18.2.7 27.5.7 9.4 0 18.7-.2 27.8-.7-9 11.7-18.3 22.4-27.5 32zm-74.4-58.9c-14.2-2.1-27.9-4.7-41-7.9 3.7-12.9 8.3-26.2 13.5-39.5 4.1 8 8.4 16 13.1 24s9.5 15.8 14.4 23.4zm73.9-208.1c9.3 9.6 18.6 20.3 27.8 32-9-.4-18.2-.7-27.5-.7-9.4 0-18.7.2-27.8.7 9-11.7 18.3-22.4 27.5-32zm-74 58.9c-4.9 7.7-9.8 15.6-14.4 23.7-4.6 8-8.9 16-13 24-5.4-13.4-10-26.8-13.8-39.8 13.1-3.1 26.9-5.8 41.2-7.9zm-90.5 125.2c-35.4-15.1-58.3-34.9-58.3-50.6s22.9-35.6 58.3-50.6c8.6-3.7 18-7 27.7-10.1 5.7 19.6 13.2 40 22.5 60.9-9.2 20.8-16.6 41.1-22.2 60.6-9.9-3.1-19.3-6.5-28-10.2zm53.8 142.9c-13.6-7.8-19.5-37.5-14.9-75.7 1.1-9.4 2.9-19.3 5.1-29.4 19.6 4.8 41 8.5 63.5 10.9 13.5 18.5 27.5 35.3 41.6 50-32.6 30.3-63.2 46.9-84 46.9-4.5-.1-8.3-1-11.3-2.7zm237.2-76.2c4.7 38.2-1.1 67.9-14.6 75.8-3 1.8-6.9 2.6-11.5 2.6-20.7 0-51.4-16.5-84-46.6 14-14.7 28-31.4 41.3-49.9 22.6-2.4 44-6.1 63.6-11 2.3 10.1 4.1 19.8 5.2 29.1zm38.5-66.7c-8.6 3.7-18 7-27.7 10.1-5.7-19.6-13.2-40-22.5-60.9 9.2-20.8 16.6-41.1 22.2-60.6 9.9 3.1 19.3 6.5 28.1 10.2 35.4 15.1 58.3 34.9 58.3 50.6-.1 15.7-23 35.6-58.4 50.6z"
+                      />
+                      <circle cx="420.9" cy="296.5" r="45.7" />
+                    </g>
+                  </svg>
+                </div>
+                <span class="font-medium text-sm sm:text-base">React</span>
+              </button>
+
+              <!-- Node.js Button -->
+              <button
+                class="quiz-type-btn flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border border-gray-200 hover:border-indigo-200 bg-white hover:bg-indigo-50/30 transition-all duration-300 ios-button"
+                data-type="node"
+              >
+                <div
+                  class="icon-container bg-green-100 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-2 shadow-sm"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 448 512"
+                    class="w-6 h-6 sm:w-7 sm:h-7 text-green-600 fill-current"
+                  >
+                    <path
+                      d="M224 508c-6.7 0-13.5-1.8-19.4-5.2l-61.7-36.5c-9.2-5.2-4.7-7-1.7-8 12.3-4.3 14.8-5.2 27.9-12.7 1.4-.8 3.2-.5 4.6.4l47.4 28.1c1.7 1 4.1 1 5.7 0l184.7-106.6c1.7-1 2.8-3 2.8-5V149.3c0-2.1-1.1-4-2.9-5.1L226.8 37.7c-1.7-1-4-1-5.7 0L36.6 144.3c-1.8 1-2.9 3-2.9 5.1v213.1c0 2 1.1 4 2.9 4.9l50.6 29.2c27.5 13.7 44.3-2.4 44.3-18.7V167.5c0-3 2.4-5.3 5.4-5.3h23.4c2.9 0 5.4 2.3 5.4 5.3V378c0 36.6-20 57.6-54.7 57.6-10.7 0-19.1 0-42.5-11.6l-48.4-27.9C8.1 389.2.7 376.3.7 362.4V149.3c0-13.8 7.4-26.8 19.4-33.7L204.6 9c11.7-6.6 27.2-6.6 38.8 0l184.7 106.7c12 6.9 19.4 19.8 19.4 33.7v213.1c0 13.8-7.4 26.7-19.4 33.7L243.4 502.8c-5.9 3.4-12.6 5.2-19.4 5.2zm149.1-210.1c0-39.9-27-50.5-83.7-58-57.4-7.6-63.2-11.5-63.2-24.9 0-11.1 4.9-25.9 47.4-25.9 37.9 0 51.9 8.2 57.7 33.8.5 2.4 2.7 4.2 5.2 4.2h24c1.5 0 2.9-.6 3.9-1.7s1.5-2.6 1.4-4.1c-3.7-44.1-33-64.6-92.2-64.6-52.7 0-84.1 22.2-84.1 59.5 0 40.4 31.3 51.6 81.8 56.6 60.5 5.9 65.2 14.8 65.2 26.7 0 20.6-16.6 29.4-55.5 29.4-48.9 0-59.6-12.3-63.2-36.6-.4-2.6-2.6-4.5-5.3-4.5h-23.9c-3 0-5.3 2.4-5.3 5.3 0 31.1 16.9 68.2 97.8 68.2 58.4-.1 92-23.2 92-63.4z"
+                    />
+                  </svg>
+                </div>
+                <span class="font-medium text-sm sm:text-base">Node.js</span>
+              </button>
+
+              <!-- HTML/CSS Button -->
+              <button
+                class="quiz-type-btn flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border border-gray-200 hover:border-indigo-200 bg-white hover:bg-indigo-50/30 transition-all duration-300 ios-button"
+                data-type="html"
+              >
+                <div
+                  class="icon-container bg-orange-100 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-2 shadow-sm"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 384 512"
+                    class="w-6 h-6 sm:w-7 sm:h-7 text-orange-600 fill-current"
+                  >
+                    <path
+                      d="M0 32l34.9 395.8L191.5 480l157.6-52.2L384 32H0zm308.2 127.9H124.4l4.1 49.4h175.6l-13.6 148.4-97.9 27v.3h-1.1l-98.7-27.3-6-75.8h47.7L138 320l53.5 14.5 53.7-14.5 6-62.2H84.3L71.5 112.2h241.1l-4.4 47.7z"
+                    />
+                  </svg>
+                </div>
+                <span class="font-medium text-sm sm:text-base">HTML/CSS</span>
+              </button>
+
+              <!-- Algorithms Button -->
+              <button
+                class="quiz-type-btn flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border border-gray-200 hover:border-indigo-200 bg-white hover:bg-indigo-50/30 transition-all duration-300 ios-button"
+                data-type="algo"
+              >
+                <div
+                  class="icon-container bg-purple-100 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-2 shadow-sm"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 640 512"
+                    class="w-6 h-6 sm:w-7 sm:h-7 text-purple-600 fill-current"
+                  >
+                    <path
+                      d="M278.9 511.5l-61-17.7c-6.4-1.8-10-8.5-8.2-14.9L346.2 8.7c1.8-6.4 8.5-10 14.9-8.2l61 17.7c6.4 1.8 10 8.5 8.2 14.9L293.8 503.3c-1.9 6.4-8.5 10.1-14.9 8.2zm-114-112.2l43.5-46.4c4.6-4.9 4.3-12.7-.8-17.2L117 256l90.6-79.7c5.1-4.5 5.5-12.3.8-17.2l-43.5-46.4c-4.5-4.8-12.1-5.1-17-.5L3.8 247.2c-5.1 4.7-5.1 12.8 0 17.5l144.1 135.1c4.9 4.6 12.5 4.4 17-.5zm327.2.6l144.1-135.1c5.1-4.7 5.1-12.8 0-17.5L492.1 112.1c-4.8-4.5-12.4-4.3-17 .5L431.6 159c-4.6 4.9-4.3 12.7.8 17.2L523 256l-90.6 79.7c-5.1 4.5-5.5 12.3-.8 17.2l43.5 46.4c4.5 4.9 12.1 5.1 17 .6z"
+                    />
+                  </svg>
+                </div>
+                <span class="font-medium text-sm sm:text-base">Algorithms</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Mobile-optimized Difficulty Selection -->
+          <div class="mb-8 sm:mb-10">
+            <div class="flex items-center justify-center mb-4">
+              <div
+                class="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent w-full max-w-xs"
+              ></div>
+              <h3
+                class="text-sm sm:text-lg font-semibold text-gray-800 px-2 sm:px-4 ios-section-title"
+              >
+                DIFFICULTY
+              </h3>
+              <div
+                class="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent w-full max-w-xs"
+              ></div>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-2 sm:gap-5 ios-segmented-control">
+              <button
+                id="difficulty-selection"
+                class="difficulty-btn active px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 border-green-300 bg-green-50 text-green-700 hover:bg-green-100 transition-all duration-300 font-medium flex items-center gap-1.5 sm:gap-2 shadow-sm ios-button"
+                data-level="easy"
+                aria-pressed="true"
+              >
+                <i class="material-icons-round text-base">check_circle</i>
+                <span class="text-sm sm:text-base">Easy</span>
+              </button>
+
+              <button
+                class="difficulty-btn px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 font-medium flex items-center gap-1.5 sm:gap-2 shadow-sm ios-button"
+                data-level="medium"
+                aria-pressed="false"
+              >
+                <i class="material-icons-round text-base">bolt</i>
+                <span class="text-sm sm:text-base">Medium</span>
+              </button>
+
+              <button
+                class="difficulty-btn px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 border-red-300 text-red-700 hover:bg-red-50 transition-all duration-300 font-medium flex items-center gap-1.5 sm:gap-2 shadow-sm ios-button"
+                data-level="hard"
+                aria-pressed="false"
+              >
+                <i class="material-icons-round text-base">warning</i>
+                <span class="text-sm sm:text-base">Hard</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- iOS-style Start Button -->
+          <button
+            id="start-button"
+            class="ios-primary-button group relative inline-flex items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 sm:px-8 py-3 sm:py-4 font-bold text-white shadow-lg transition-all duration-300"
+          >
+            <span class="relative flex items-center gap-2">
+              <i class="material-icons-round">play_arrow</i>
+              Start Quiz
+            </span>
+          </button>
+        </div>
+
+        <!-- Question screen with iOS-style layout -->
+        <div id="question-screen" class="hidden animate-fade-in">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
+            <div class="flex items-center">
+              <div
+                id="timer-display"
+                class="text-base sm:text-lg font-semibold text-indigo-700 mb-2 sm:mb-0"
+              >
+                Time: 30s
+              </div>
+              <!-- Added pause button -->
+              <button
+                id="pause-button"
+                data-state="running"
+                aria-label="Pause quiz"
+                class="ml-2 px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-100"
+              >
+                <i class="material-icons-round">pause</i> Pause
+              </button>
+            </div>
+            <div class="flex items-center">
+              <span id="question-number" class="text-xs sm:text-sm text-gray-600 mr-2"
+                >Question 1 of 10</span
+              >
+              <span id="progress-percent" class="text-xs sm:text-sm font-medium text-indigo-700"
+                >0% Complete</span
+              >
+            </div>
+          </div>
+
+          <div class="w-full bg-gray-200 rounded-full h-2 sm:h-2.5 mb-4 sm:mb-6">
+            <div
+              id="progress-bar"
+              class="bg-indigo-600 h-2 sm:h-2.5 rounded-full"
+              style="width: 0%"
+            ></div>
+          </div>
+
+          <div class="mb-4 sm:mb-8">
+            <h2
+              id="question-text"
+              class="text-lg sm:text-xl font-semibold text-gray-800 leading-relaxed"
+              tabindex="-1"
+            ></h2>
+          </div>
+
+          <div
+            id="options-container"
+            class="space-y-2 sm:space-y-3 mb-4 sm:mb-6"
+            role="radiogroup"
+            aria-labelledby="question-text"
+          >
+            <!-- Options will be inserted here -->
+          </div>
+
+          <div
+            id="explanation-container"
+            class="mt-4 sm:mt-6 p-3 sm:p-5 bg-indigo-50 border border-indigo-200 rounded-lg hidden animate-slide-in"
+          >
+            <h3 class="font-semibold text-indigo-800 mb-1 sm:mb-2 text-sm sm:text-base">
+              Explanation:
+            </h3>
+            <div
+              id="explanation-text"
+              class="text-indigo-900 leading-relaxed text-sm sm:text-base"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Result screen with iOS-style layout -->
+        <div id="result-screen" class="hidden animate-fade-in">
+          <div id="result-content" class="text-center mb-6 sm:mb-8">
+            <div class="mb-4 sm:mb-6">
+              <div id="score-percent" class="text-4xl sm:text-5xl font-bold"></div>
+              <p id="score-text" class="mt-1 sm:mt-2 text-sm sm:text-lg"></p>
+            </div>
+            <p id="feedback-message" class="mb-4 sm:mb-6 text-sm sm:text-base text-gray-700"></p>
+          </div>
+
+          <div id="analysis-container" class="mb-6 sm:mb-8 p-3 sm:p-5 bg-gray-50 rounded-lg">
+            <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-4 text-indigo-900">
+              Performance Analysis
+            </h3>
+            <div id="analysis-content" class="text-sm sm:text-base max-h-60 overflow-y-auto">
+              <!-- Analysis content will be inserted here -->
+            </div>
+          </div>
+
+          <div id="review-container" class="mb-6 sm:mb-8">
+            <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-4 text-indigo-900">
+              Review Questions
+            </h3>
+            <!-- Review filters will be dynamically added here -->
+            <div
+              id="review-questions"
+              class="space-y-3 sm:space-y-4 text-sm sm:text-base max-h-80 overflow-y-auto pr-2"
+            >
+              <!-- Review questions will be inserted here -->
+            </div>
+          </div>
+
+          <div class="flex flex-wrap justify-center gap-2 sm:gap-3">
+            <button
+              id="restart-button"
+              class="px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium shadow-md hover:shadow-lg text-sm sm:text-base ios-button"
+            >
+              Restart Quiz
+            </button>
+            <button
+              id="change-topic-button"
+              class="px-3 sm:px-4 py-2 bg-white border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors font-medium text-sm sm:text-base ios-button"
+            >
+              Change Topic
+            </button>
+            <button
+              id="share-button"
+              class="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-md hover:shadow-lg text-sm sm:text-base ios-button"
+            >
+              Share Results
+            </button>
+            <!-- Added export PDF button -->
+            <button
+              id="export-pdf-button"
+              class="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-md hover:shadow-lg text-sm sm:text-base ios-button"
+            >
+              <i class="material-icons-round">picture_as_pdf</i> Export PDF
             </button>
           </div>
-          <div class="flex items-center">
-            <span id="question-number" class="text-xs sm:text-sm text-gray-600 mr-2">Question 1 of 10</span>
-            <span id="progress-percent" class="text-xs sm:text-sm font-medium text-indigo-700">0% Complete</span>
+        </div>
+      </section>
+
+      <!-- Interview container with iOS-style layout -->
+      <section
+        id="interview-container"
+        class="bg-white/90 backdrop-blur-md rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 p-4 sm:p-10 transition-all duration-500 hover:shadow-[0_20px_50px_rgb(79,70,229,0.08)] hidden mb-20 ios-card"
+      >
+        <div class="flex flex-col sm:flex-row h-[500px]">
+          <div class="w-full sm:w-1/4 mb-4 sm:mb-0 sm:pr-4">
+            <h2
+              class="text-lg sm:text-xl font-bold mb-3 text-indigo-900 sticky top-0 bg-white/90 backdrop-blur-sm py-2 z-10"
+            >
+              Topics
+            </h2>
+            <div class="interview-topics space-y-2 pb-2 max-h-[430px] overflow-y-auto pr-2">
+              <button
+                class="topic-btn active w-full text-left p-2 rounded-lg ios-button"
+                data-topic="js-basics"
+              >
+                <i class="material-icons-round text-base sm:text-lg">code</i> JavaScript
+              </button>
+              <button
+                class="topic-btn w-full text-left p-2 rounded-lg ios-button"
+                data-topic="algorithm"
+              >
+                <i class="material-icons-round text-base sm:text-lg">calculate</i> Algorithm
+                Questions
+              </button>
+              <button
+                class="topic-btn w-full text-left p-2 rounded-lg ios-button"
+                data-topic="system-design"
+              >
+                <i class="material-icons-round text-base sm:text-lg">architecture</i> System Design
+              </button>
+              <button
+                class="topic-btn w-full text-left p-2 rounded-lg ios-button"
+                data-topic="behavior"
+              >
+                <i class="material-icons-round text-base sm:text-lg">psychology</i> Behavioral
+                Questions
+              </button>
+            </div>
+          </div>
+          <div
+            class="w-full sm:w-3/4 sm:pl-4 border-t sm:border-t-0 sm:border-l border-gray-200 pt-4 sm:pt-0 sm:pl-4 flex flex-col"
+          >
+            <!-- Add search input here for better discoverability -->
+            <div class="mb-4 sticky top-0 bg-white/95 backdrop-blur-sm py-2 z-10">
+              <input
+                type="text"
+                id="interview-search"
+                placeholder="Search questions in this topic..."
+                class="w-full p-2 border border-gray-300 rounded-lg ios-button"
+              />
+            </div>
+            <div id="interview-content" class="overflow-y-auto flex-1 pr-2 max-h-[430px]">
+              <!-- Interview content will be loaded here -->
+              <div class="flex items-center justify-center h-full">
+                <div class="text-center">
+                  <div
+                    class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto mb-4"
+                  ></div>
+                  <p class="text-gray-600">Loading interview content...</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <div class="w-full bg-gray-200 rounded-full h-2 sm:h-2.5 mb-4 sm:mb-6">
-          <div id="progress-bar" class="bg-indigo-600 h-2 sm:h-2.5 rounded-full" style="width: 0%"></div>
-        </div>
-        
-        <div class="mb-4 sm:mb-8">
-          <h2 id="question-text" class="text-lg sm:text-xl font-semibold text-gray-800 leading-relaxed" tabindex="-1"></h2>
-        </div>
-        
-        <div id="options-container" class="space-y-2 sm:space-y-3 mb-4 sm:mb-6" role="radiogroup" aria-labelledby="question-text">
-          <!-- Options will be inserted here -->
-        </div>
-        
-        <div id="explanation-container" class="mt-4 sm:mt-6 p-3 sm:p-5 bg-indigo-50 border border-indigo-200 rounded-lg hidden animate-slide-in">
-          <h3 class="font-semibold text-indigo-800 mb-1 sm:mb-2 text-sm sm:text-base">Explanation:</h3>
-          <div id="explanation-text" class="text-indigo-900 leading-relaxed text-sm sm:text-base"></div>
-        </div>
-      </div>
-      
-      <div id="result-screen" class="hidden animate-fade-in">
-        <div id="result-content" class="text-center mb-6 sm:mb-8">
-          <h2 class="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-indigo-900">Quiz Completed!</h2>
-          <div class="mb-4 sm:mb-6">
-            <div id="score-percent" class="text-4xl sm:text-5xl font-bold"></div>
-            <p id="score-text" class="mt-1 sm:mt-2 text-sm sm:text-lg"></p>
-          </div>
-          <p id="feedback-message" class="mb-4 sm:mb-6 text-sm sm:text-base text-gray-700"></p>
-        </div>
-        
-        <div id="analysis-container" class="mb-6 sm:mb-8 p-3 sm:p-5 bg-gray-50 rounded-lg">
-          <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-4 text-indigo-900">Performance Analysis</h3>
-          <div id="analysis-content" class="text-sm sm:text-base">
-            <!-- Analysis content will be inserted here -->
-          </div>
-        </div>
-        
-        <div id="review-container" class="mb-6 sm:mb-8">
-          <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-4 text-indigo-900">Review Questions</h3>
-          <!-- Review filters will be dynamically added here -->
-          <div id="review-questions" class="space-y-3 sm:space-y-4 text-sm sm:text-base">
-            <!-- Review questions will be inserted here -->
-          </div>
-        </div>
-        
-        <div class="flex flex-wrap justify-center gap-2 sm:gap-3">
-          <button id="restart-button" class="px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium shadow-md hover:shadow-lg text-sm sm:text-base">
-            Restart Quiz
+      </section>
+    </main>
+
+    <!-- Mobile-optimized toast notifications -->
+    <div
+      id="toast-container"
+      class="fixed bottom-20 inset-x-0 flex justify-center items-center pointer-events-none z-40"
+      aria-live="polite"
+    >
+      <div class="toast-inner-container w-full max-w-sm mx-4"></div>
+    </div>
+
+    <!-- Mobile-optimized dialog -->
+    <div
+      id="resume-dialog"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden ios-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dialog-title"
+    >
+      <div
+        class="bg-white mx-4 p-5 sm:p-8 rounded-2xl max-w-md w-full shadow-2xl animate-slide-up border border-gray-200 ios-modal-content"
+      >
+        <h3 id="dialog-title" class="text-lg sm:text-2xl font-bold mb-3 sm:mb-4 text-indigo-900">
+          Resume Your Progress
+        </h3>
+        <p class="mb-5 sm:mb-8 text-gray-700 text-sm sm:text-base">
+          We found an unfinished quiz session. Would you like to continue where you left off?
+        </p>
+        <div class="flex justify-end gap-3 sm:gap-4">
+          <button
+            id="resume-no"
+            class="px-4 sm:px-5 py-2 sm:py-2.5 bg-gray-100 text-gray-800 rounded-xl hover:bg-gray-200 transition-colors font-medium text-sm sm:text-base ios-button"
+          >
+            Start New
           </button>
-          <button id="change-topic-button" class="px-3 sm:px-4 py-2 bg-white border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors font-medium text-sm sm:text-base">
-            Change Topic
-          </button>
-          <button id="share-button" class="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-md hover:shadow-lg text-sm sm:text-base">
-            Share Results
-          </button>
-          <!-- Added export PDF button -->
-          <button id="export-pdf-button" class="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-md hover:shadow-lg text-sm sm:text-base">
-            <i class="fas fa-file-pdf"></i> Export PDF
+          <button
+            id="resume-yes"
+            class="px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-colors font-medium text-sm sm:text-base ios-primary-button"
+          >
+            Continue
           </button>
         </div>
       </div>
     </div>
-    
-    <div id="toast-container" class="fixed bottom-4 right-4 z-50"></div>
-    
-    <div id="resume-dialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" role="dialog" aria-modal="true">
-      <div class="bg-white p-4 sm:p-6 rounded-lg max-w-xs sm:max-w-md w-full mx-4 shadow-xl animate-slide-in">
-        <h3 class="text-lg sm:text-xl font-bold mb-2 sm:mb-4 text-indigo-900">Resume Quiz?</h3>
-        <p class="mb-4 sm:mb-6 text-sm sm:text-base text-gray-700">You have an unfinished quiz. Would you like to continue where you left off?</p>
-        <div class="flex justify-end space-x-3 sm:space-x-4">
-          <button id="resume-no" class="px-3 sm:px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors text-sm sm:text-base">Start New</button>
-          <button id="resume-yes" class="px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base">Continue</button>
+
+    <!-- Accessibility live region -->
+    <div id="aria-live-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Mobile-optimized footer with iOS tab bar style -->
+    <footer
+      class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 z-20 pb-safe ios-tab-bar"
+    >
+      <nav aria-label="Bottom Navigation">
+        <div class="flex items-center justify-around h-14">
+          <a
+            href="#"
+            class="flex flex-col items-center justify-center w-1/5 h-full ios-tab-item active"
+            aria-current="page"
+          >
+            <i class="material-icons-round text-xl" aria-hidden="true">home</i>
+            <span class="text-xs mt-0.5">Home</span>
+          </a>
+          <a href="#" class="flex flex-col items-center justify-center w-1/5 h-full ios-tab-item">
+            <i class="material-icons-round text-xl" aria-hidden="true">search</i>
+            <span class="text-xs mt-0.5">Search</span>
+          </a>
+          <a href="#" class="flex flex-col items-center justify-center w-1/5 h-full ios-tab-item">
+            <i class="material-icons-round text-xl" aria-hidden="true">bookmarks</i>
+            <span class="text-xs mt-0.5">Saved</span>
+          </a>
+          <a href="#" class="flex flex-col items-center justify-center w-1/5 h-full ios-tab-item">
+            <i class="material-icons-round text-xl" aria-hidden="true">person</i>
+            <span class="text-xs mt-0.5">Profile</span>
+          </a>
+          <a href="#" class="flex flex-col items-center justify-center w-1/5 h-full ios-tab-item">
+            <i class="material-icons-round text-xl" aria-hidden="true">settings</i>
+            <span class="text-xs mt-0.5">Settings</span>
+          </a>
         </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Added accessibility live region for screen readers -->
-  <div id="aria-live-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
-  
-  <!-- Theme toggle added -->
-  <div class="theme-toggle-container fixed top-4 right-4">
-    <label for="theme-toggle" class="theme-toggle-label">
-      <span class="theme-toggle-icon light"><i class="fas fa-sun"></i></span>
-      <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
-      <span class="theme-toggle-icon dark"><i class="fas fa-moon"></i></span>
-    </label>
-  </div>
-  
-  <footer class="py-4 sm:py-6 text-center text-gray-600 text-xs sm:text-sm">
-    <p>© 2025 HireMeNow Quiz. All rights reserved.</p>
-  </footer>
-  
-  <!-- Added html2pdf library for PDF export -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script type="module" src="/src/main.js"></script>
-</body>
+      </nav>
+    </footer>
+
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "HireMeNow",
+        "url": "https://hiremenow.example.com",
+        "description": "An interactive platform for technical interview preparation with quizzes on JavaScript, React, TypeScript, and more.",
+        "applicationCategory": "EducationalApplication",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
+        },
+        "operatingSystem": "Web browser",
+        "author": {
+          "@type": "Organization",
+          "name": "HireMeNow",
+          "url": "https://hiremenow.example.com"
+        }
+      }
+    </script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What topics does HireMeNow cover?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "HireMeNow covers technical interview topics including JavaScript, TypeScript, React, Node.js, HTML/CSS, and algorithms."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does HireMeNow help with interview preparation?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "HireMeNow provides interactive quizzes and practice interview questions with explanations to help you practice and improve your technical skills before interviews."
+            }
+          }
+        ]
+      }
+    </script>
+
+    <!-- Script files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+    <script type="module" src="/src/main.js"></script>
+
+    <!-- Add Touch Interaction Script -->
+    <script>
+      // Initialize touch gestures when document is loaded
+      document.addEventListener('DOMContentLoaded', function () {
+        // Add iOS-style tap feedback to buttons
+        const buttons = document.querySelectorAll(
+          '.ios-button, .ios-primary-button, .nav-btn, .ios-tab-item'
+        );
+        buttons.forEach((button) => {
+          button.addEventListener('touchstart', function () {
+            this.classList.add('active-touch');
+          });
+
+          button.addEventListener('touchend', function () {
+            this.classList.remove('active-touch');
+          });
+
+          button.addEventListener('touchcancel', function () {
+            this.classList.remove('active-touch');
+          });
+        });
+
+        // Initialize Hammer.js for quiz container swipe
+        if (typeof Hammer !== 'undefined') {
+          const quizContainer = document.getElementById('quiz-container');
+          const interviewContainer = document.getElementById('interview-container');
+
+          if (quizContainer && interviewContainer) {
+            const hammerQuiz = new Hammer(quizContainer);
+            hammerQuiz.on('swipeleft', function () {
+              // Switch to interview mode on swipe left
+              if (!quizContainer.classList.contains('hidden')) {
+                document.getElementById('nav-interview').click();
+              }
+            });
+
+            const hammerInterview = new Hammer(interviewContainer);
+            hammerInterview.on('swiperight', function () {
+              // Switch to quiz mode on swipe right
+              if (!interviewContainer.classList.contains('hidden')) {
+                document.getElementById('nav-quiz').click();
+              }
+            });
+          }
+        }
+
+        // Implement pull-to-refresh behavior
+        let startY = 0;
+        let refreshing = false;
+
+        document.addEventListener('touchstart', function (e) {
+          startY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchmove', function (e) {
+          const y = e.touches[0].clientY;
+          const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+
+          // If at top of page and pulling down
+          if (scrollTop === 0 && y > startY && !refreshing) {
+            document.querySelector('.mobile-container').classList.add('pulling');
+          }
+        });
+
+        document.addEventListener('touchend', function (e) {
+          document.querySelector('.mobile-container').classList.remove('pulling');
+        });
+      });
+    </script>
+
+    <!-- CSS styles for iOS-like interface -->
+    <style>
+      /* Grid pattern background */
+      .bg-grid-pattern {
+        background-image:
+          linear-gradient(to right, rgba(79, 70, 229, 0.1) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(79, 70, 229, 0.1) 1px, transparent 1px);
+        background-size: 24px 24px;
+      }
+
+      /* Improved navigation button styles */
+      .nav-btn.active {
+        background-color: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .nav-btn:not(.active) {
+        color: #6b7280;
+      }
+
+      /* Custom scrollbar styles */
+      #interview-content::-webkit-scrollbar,
+      .interview-topics::-webkit-scrollbar,
+      #review-questions::-webkit-scrollbar,
+      #analysis-content::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      #interview-content::-webkit-scrollbar-track,
+      .interview-topics::-webkit-scrollbar-track,
+      #review-questions::-webkit-scrollbar-track,
+      #analysis-content::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      #interview-content::-webkit-scrollbar-thumb,
+      .interview-topics::-webkit-scrollbar-thumb,
+      #review-questions::-webkit-scrollbar-thumb,
+      #analysis-content::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 10px;
+      }
+
+      #interview-content::-webkit-scrollbar-thumb:hover,
+      .interview-topics::-webkit-scrollbar-thumb:hover,
+      #review-questions::-webkit-scrollbar-thumb:hover,
+      #analysis-content::-webkit-scrollbar-thumb:hover {
+        background: #a5b4fc;
+      }
+
+      /* Topic button active state styling */
+      .topic-btn.active {
+        background-color: rgba(79, 70, 229, 0.1);
+        border-left: 4px solid #4f46e5;
+        color: #4f46e5;
+        font-weight: 500;
+        padding-left: calc(0.5rem - 4px); /* Adjust padding to account for border */
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.1);
+        transition: all 0.3s;
+      }
+
+      .topic-btn:not(.active):hover {
+        background-color: rgba(79, 70, 229, 0.05);
+      }
+
+      /* Animation keyframes */
+      @keyframes float-slow {
+        0% {
+          transform: translate(0, 0) rotate(0deg);
+        }
+        50% {
+          transform: translate(-20px, 20px) rotate(5deg);
+        }
+        100% {
+          transform: translate(0, 0) rotate(0deg);
+        }
+      }
+
+      @keyframes float-medium {
+        0% {
+          transform: translate(0, 0) rotate(0deg);
+        }
+        50% {
+          transform: translate(15px, -15px) rotate(-3deg);
+        }
+        100% {
+          transform: translate(0, 0) rotate(0deg);
+        }
+      }
+
+      @keyframes pulse-slow {
+        0% {
+          transform: scale(1);
+          opacity: 0.2;
+        }
+        50% {
+          transform: scale(1.1);
+          opacity: 0.3;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 0.2;
+        }
+      }
+
+      @keyframes wave-animation {
+        0% {
+          transform: translateX(0) translateY(0) scale(1.1);
+        }
+        50% {
+          transform: translateX(-25px) translateY(10px) scale(1);
+        }
+        100% {
+          transform: translateX(0) translateY(0) scale(1.1);
+        }
+      }
+
+      @keyframes particle-float {
+        0% {
+          transform: translateY(0) translateX(0);
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-100px) translateX(20px);
+          opacity: 0;
+        }
+      }
+
+      /* Apply animations */
+      .animate-float-slow {
+        animation: float-slow 15s ease-in-out infinite;
+      }
+
+      .animate-float-medium {
+        animation: float-medium 12s ease-in-out infinite;
+      }
+
+      .animate-pulse-slow {
+        animation: pulse-slow 8s ease-in-out infinite;
+      }
+
+      .wave-animation {
+        width: 100%;
+        height: 100%;
+        transform-origin: center bottom;
+        animation: wave-animation 15s ease-in-out infinite;
+      }
+
+      .wave-path {
+        transition: all 0.3s;
+      }
+
+      /* Particle styling */
+      .particles-container {
+        z-index: -1;
+      }
+
+      .particle {
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        background: #a5b4fc;
+        border-radius: 50%;
+        box-shadow: 0 0 10px rgba(165, 180, 252, 0.5);
+        animation: particle-float 10s linear infinite;
+      }
+
+      .particle-1 {
+        top: 10%;
+        left: 20%;
+        animation-duration: 15s;
+      }
+
+      .particle-2 {
+        top: 30%;
+        right: 25%;
+        animation-duration: 18s;
+        animation-delay: 2s;
+      }
+
+      .particle-3 {
+        top: 60%;
+        left: 40%;
+        animation-duration: 12s;
+        animation-delay: 1s;
+      }
+
+      .particle-4 {
+        top: 40%;
+        left: 65%;
+        animation-duration: 20s;
+        animation-delay: 0.5s;
+      }
+
+      .particle-5 {
+        top: 70%;
+        right: 15%;
+        animation-duration: 14s;
+        animation-delay: 3s;
+      }
+
+      .particle-6 {
+        top: 80%;
+        left: 30%;
+        animation-duration: 16s;
+        animation-delay: 2.5s;
+      }
+
+      .particle-7 {
+        top: 15%;
+        right: 45%;
+        animation-duration: 17s;
+        animation-delay: 1.5s;
+      }
+
+      .particle-8 {
+        top: 50%;
+        right: 10%;
+        animation-duration: 19s;
+        animation-delay: 1s;
+      }
+
+      .particle-9 {
+        top: 25%;
+        left: 10%;
+        animation-duration: 13s;
+        animation-delay: 2s;
+      }
+
+      .particle-10 {
+        top: 90%;
+        right: 30%;
+        animation-duration: 11s;
+        animation-delay: 0.5s;
+      }
+
+      /* Add some animations */
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes slide-in {
+        from {
+          transform: translateY(10px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .animate-fade-in {
+        animation: fade-in 0.3s ease-in-out;
+      }
+
+      .animate-slide-in {
+        animation: slide-in 0.3s ease-in-out;
+      }
+
+      /* Fix for content overflow */
+      body {
+        overflow-x: hidden;
+      }
+
+      /* Ensure container has minimum height to push footer down */
+      .min-h-screen {
+        min-height: calc(100vh - 14px);
+      }
+
+      /* Add glass effect to containers */
+      .quiz-container,
+      .interview-container {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+      }
+
+      /* Enhanced header and footer styles */
+      .nav-btn.active {
+        background-color: white;
+        color: #4f46e5;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        font-weight: 500;
+      }
+
+      .nav-btn:not(.active) {
+        color: #e0e7ff;
+      }
+
+      .nav-btn:not(.active):hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+      }
+
+      /* Footer social icon hover effects */
+      footer a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 36px;
+        width: 36px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      footer a:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+      }
+
+      /* Add subtle shimmer animation to header logo */
+      @keyframes shimmer {
+        0% {
+          background-position: -100% 0;
+        }
+        100% {
+          background-position: 200% 0;
+        }
+      }
+
+      header h1 {
+        background: linear-gradient(90deg, #ffffff, #e0e7ff, #ffffff);
+        background-size: 200% auto;
+        background-clip: text;
+        -webkit-background-clip: text;
+        animation: shimmer 8s linear infinite;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+
+      /* iOS-specific styles and mobile optimizations */
+
+      /* Safe area insets for iOS notch compatibility */
+      .pt-safe {
+        padding-top: env(safe-area-inset-top, 0);
+      }
+
+      .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 0);
+      }
+
+      /* iOS text styling */
+      .ios-text {
+        letter-spacing: -0.01em;
+        font-weight: 600;
+      }
+
+      .ios-section-title {
+        letter-spacing: 0.03em;
+        font-weight: 700;
+        color: #6366f1;
+      }
+
+      /* iOS card styling */
+      .ios-card {
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+
+      /* iOS button styling */
+      .ios-button {
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        touch-action: manipulation;
+        transition:
+          transform 0.15s ease,
+          background-color 0.2s ease;
+      }
+
+      .ios-button:active,
+      .ios-button.active-touch {
+        transform: scale(0.97);
+      }
+
+      .ios-primary-button {
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        touch-action: manipulation;
+        transition:
+          transform 0.15s ease,
+          opacity 0.2s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .ios-primary-button:active,
+      .ios-primary-button.active-touch {
+        transform: scale(0.97);
+        opacity: 0.9;
+      }
+
+      .ios-primary-button:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), transparent);
+        pointer-events: none;
+      }
+
+      /* iOS segmented control */
+      .ios-segmented-control {
+        background-color: rgba(239, 239, 244, 0.7);
+        padding: 2px;
+        border-radius: 10px;
+        display: inline-flex;
+      }
+
+      /* iOS modal */
+      .ios-modal {
+        transition: opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+      }
+
+      .ios-modal-content {
+        max-height: 80vh;
+        overflow-y: auto;
+        transform: translateY(0);
+        transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      }
+
+      .ios-modal.hidden .ios-modal-content {
+        transform: translateY(30px);
+      }
+
+      /* iOS tab bar */
+      .ios-tab-bar {
+        box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.05);
+      }
+
+      .ios-tab-item {
+        color: #8b94a3;
+        transition: color 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .ios-tab-item.active {
+        color: #4f46e5;
+      }
+
+      .ios-tab-item:active,
+      .ios-tab-item.active-touch {
+        opacity: 0.7;
+      }
+
+      /* Pull to refresh animation */
+      .pulling::before {
+        content: '';
+        position: absolute;
+        top: -50px;
+        left: 50%;
+        margin-left: -15px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 3px solid rgba(79, 70, 229, 0.2);
+        border-top-color: #4f46e5;
+        animation: spin 0.8s linear infinite;
+        transition: transform 0.2s ease-out;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Mobile-specific responsive adjustments */
+      @media (max-width: 480px) {
+        .mobile-container {
+          padding-left: 12px;
+          padding-right: 12px;
+        }
+
+        .ios-card {
+          padding: 16px;
+        }
+
+        /* Add overscroll behavior for iOS-like bounce */
+        body {
+          overscroll-behavior-y: contain;
+          overflow-y: auto;
+        }
+
+        /* Improve touch target sizes */
+        button,
+        a,
+        input,
+        select,
+        .quiz-type-btn {
+          min-height: 44px;
+        }
+      }
+
+      /* Fix for iOS Safari 100vh issue */
+      .min-h-screen {
+        min-height: calc(100vh - env(safe-area-inset-bottom, 0));
+      }
+
+      /* Add xs breakpoint for extremely small screens */
+      @media (min-width: 400px) {
+        .xs\:inline {
+          display: inline;
+        }
+      }
+
+      /* Add smooth iOS-like animations */
+      @keyframes slide-up {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .animate-slide-up {
+        animation: slide-up 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+      }
+
+      /* Nav tab active state with iOS feel */
+      .nav-btn.active {
+        background-color: white;
+        color: #4f46e5;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        font-weight: 500;
+      }
+
+      .nav-btn:not(.active) {
+        color: #e0e7ff;
+      }
+
+      .nav-tab-group {
+        transition: background-color 0.3s ease;
+      }
+    </style>
+  </body>
 </html>
