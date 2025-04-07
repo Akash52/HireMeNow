@@ -360,3 +360,556 @@
 .dark .help-button {
   @apply text-indigo-400 hover:text-indigo-300;
 }
+
+
+
+
+
+ /* Grid pattern background */
+ .bg-grid-pattern {
+  background-image:
+    linear-gradient(to right, rgba(79, 70, 229, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(79, 70, 229, 0.1) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Improved navigation button styles */
+.nav-btn.active {
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.nav-btn:not(.active) {
+  color: #6b7280;
+}
+
+/* Custom scrollbar styles */
+#interview-content::-webkit-scrollbar,
+.interview-topics::-webkit-scrollbar,
+#review-questions::-webkit-scrollbar,
+#analysis-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+#interview-content::-webkit-scrollbar-track,
+.interview-topics::-webkit-scrollbar-track,
+#review-questions::-webkit-scrollbar-track,
+#analysis-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+#interview-content::-webkit-scrollbar-thumb,
+.interview-topics::-webkit-scrollbar-thumb,
+#review-questions::-webkit-scrollbar-thumb,
+#analysis-content::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
+
+#interview-content::-webkit-scrollbar-thumb:hover,
+.interview-topics::-webkit-scrollbar-thumb:hover,
+#review-questions::-webkit-scrollbar-thumb:hover,
+#analysis-content::-webkit-scrollbar-thumb:hover {
+  background: #a5b4fc;
+}
+
+/* Topic button active state styling */
+.topic-btn.active {
+  background-color: rgba(79, 70, 229, 0.1);
+  border-left: 4px solid #4f46e5;
+  color: #4f46e5;
+  font-weight: 500;
+  padding-left: calc(0.5rem - 4px); /* Adjust padding to account for border */
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.1);
+  transition: all 0.3s;
+}
+
+.topic-btn:not(.active):hover {
+  background-color: rgba(79, 70, 229, 0.05);
+}
+
+/* Animation keyframes */
+@keyframes float-slow {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(-20px, 20px) rotate(5deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+@keyframes float-medium {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(15px, -15px) rotate(-3deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+@keyframes pulse-slow {
+  0% {
+    transform: scale(1);
+    opacity: 0.2;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.2;
+  }
+}
+
+@keyframes wave-animation {
+  0% {
+    transform: translateX(0) translateY(0) scale(1.1);
+  }
+  50% {
+    transform: translateX(-25px) translateY(10px) scale(1);
+  }
+  100% {
+    transform: translateX(0) translateY(0) scale(1.1);
+  }
+}
+
+@keyframes particle-float {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) translateX(20px);
+    opacity: 0;
+  }
+}
+
+/* Apply animations */
+.animate-float-slow {
+  animation: float-slow 15s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: float-medium 12s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+.wave-animation {
+  width: 100%;
+  height: 100%;
+  transform-origin: center bottom;
+  animation: wave-animation 15s ease-in-out infinite;
+}
+
+.wave-path {
+  transition: all 0.3s;
+}
+
+/* Particle styling */
+.particles-container {
+  z-index: -1;
+}
+
+.particle {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #a5b4fc;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(165, 180, 252, 0.5);
+  animation: particle-float 10s linear infinite;
+}
+
+.particle-1 {
+  top: 10%;
+  left: 20%;
+  animation-duration: 15s;
+}
+
+.particle-2 {
+  top: 30%;
+  right: 25%;
+  animation-duration: 18s;
+  animation-delay: 2s;
+}
+
+.particle-3 {
+  top: 60%;
+  left: 40%;
+  animation-duration: 12s;
+  animation-delay: 1s;
+}
+
+.particle-4 {
+  top: 40%;
+  left: 65%;
+  animation-duration: 20s;
+  animation-delay: 0.5s;
+}
+
+.particle-5 {
+  top: 70%;
+  right: 15%;
+  animation-duration: 14s;
+  animation-delay: 3s;
+}
+
+.particle-6 {
+  top: 80%;
+  left: 30%;
+  animation-duration: 16s;
+  animation-delay: 2.5s;
+}
+
+.particle-7 {
+  top: 15%;
+  right: 45%;
+  animation-duration: 17s;
+  animation-delay: 1.5s;
+}
+
+.particle-8 {
+  top: 50%;
+  right: 10%;
+  animation-duration: 19s;
+  animation-delay: 1s;
+}
+
+.particle-9 {
+  top: 25%;
+  left: 10%;
+  animation-duration: 13s;
+  animation-delay: 2s;
+}
+
+.particle-10 {
+  top: 90%;
+  right: 30%;
+  animation-duration: 11s;
+  animation-delay: 0.5s;
+}
+
+/* Add some animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-in-out;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-in-out;
+}
+
+/* Fix for content overflow */
+body {
+  overflow-x: hidden;
+}
+
+/* Ensure container has minimum height to push footer down */
+.min-h-screen {
+  min-height: calc(100vh - 14px);
+}
+
+/* Add glass effect to containers */
+.quiz-container,
+.interview-container {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+}
+
+/* Enhanced header and footer styles */
+.nav-btn.active {
+  background-color: white;
+  color: #4f46e5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-weight: 500;
+}
+
+.nav-btn:not(.active) {
+  color: #e0e7ff;
+}
+
+.nav-btn:not(.active):hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Footer social icon hover effects */
+footer a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  width: 36px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+footer a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Add subtle shimmer animation to header logo */
+@keyframes shimmer {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+header h1 {
+  background: linear-gradient(90deg, #ffffff, #e0e7ff, #ffffff);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: shimmer 8s linear infinite;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* iOS-specific styles and mobile optimizations */
+
+/* Safe area insets for iOS notch compatibility */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* iOS text styling */
+.ios-text {
+  letter-spacing: -0.01em;
+  font-weight: 600;
+}
+
+.ios-section-title {
+  letter-spacing: 0.03em;
+  font-weight: 700;
+  color: #6366f1;
+}
+
+/* iOS card styling */
+.ios-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* iOS button styling */
+.ios-button {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
+  transition:
+    transform 0.15s ease,
+    background-color 0.2s ease;
+}
+
+.ios-button:active,
+.ios-button.active-touch {
+  transform: scale(0.97);
+}
+
+.ios-primary-button {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
+  transition:
+    transform 0.15s ease,
+    opacity 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.ios-primary-button:active,
+.ios-primary-button.active-touch {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+.ios-primary-button:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), transparent);
+  pointer-events: none;
+}
+
+/* iOS segmented control */
+.ios-segmented-control {
+  background-color: rgba(239, 239, 244, 0.7);
+  padding: 2px;
+  border-radius: 10px;
+  display: inline-flex;
+}
+
+/* iOS modal */
+.ios-modal {
+  transition: opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.ios-modal-content {
+  max-height: 80vh;
+  overflow-y: auto;
+  transform: translateY(0);
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.ios-modal.hidden .ios-modal-content {
+  transform: translateY(30px);
+}
+
+/* iOS tab bar */
+.ios-tab-bar {
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+.ios-tab-item {
+  color: #8b94a3;
+  transition: color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ios-tab-item.active {
+  color: #4f46e5;
+}
+
+.ios-tab-item:active,
+.ios-tab-item.active-touch {
+  opacity: 0.7;
+}
+
+/* Pull to refresh animation */
+.pulling::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: 50%;
+  margin-left: -15px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid rgba(79, 70, 229, 0.2);
+  border-top-color: #4f46e5;
+  animation: spin 0.8s linear infinite;
+  transition: transform 0.2s ease-out;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile-specific responsive adjustments */
+@media (max-width: 480px) {
+  .mobile-container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .ios-card {
+    padding: 16px;
+  }
+
+  /* Add overscroll behavior for iOS-like bounce */
+  body {
+    overscroll-behavior-y: contain;
+    overflow-y: auto;
+  }
+
+  /* Improve touch target sizes */
+  button,
+  a,
+  input,
+  select,
+  .quiz-type-btn {
+    min-height: 44px;
+  }
+}
+
+/* Fix for iOS Safari 100vh issue */
+.min-h-screen {
+  min-height: calc(100vh - env(safe-area-inset-bottom, 0));
+}
+
+/* Add xs breakpoint for extremely small screens */
+@media (min-width: 400px) {
+  .xs\:inline {
+    display: inline;
+  }
+}
+
+/* Add smooth iOS-like animations */
+@keyframes slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Nav tab active state with iOS feel */
+.nav-btn.active {
+  background-color: white;
+  color: #4f46e5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-weight: 500;
+}
+
+.nav-btn:not(.active) {
+  color: #e0e7ff;
+}
+
+.nav-tab-group {
+  transition: background-color 0.3s ease;
+}

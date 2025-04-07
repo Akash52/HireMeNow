@@ -175,12 +175,12 @@ export default class InterviewManager {
 
         return `
         <div class="interview-item" data-id="${itemId}">
-          <div class="interview-item-header">
-            <div class="flex items-start">
+          <div class="interview-item-header flex flex-col sm:flex-row sm:items-start">
+            <div class="flex items-start mb-2 sm:mb-0">
               <div class="progress-circle mr-3 ${isCompleted ? 'completed' : ''}">
                 ${isCompleted ? '<i class="fas fa-check"></i>' : index + 1}
               </div>
-              <h4 class="interview-question">
+              <h4 class="interview-question pr-8 sm:pr-0">
                 ${
                   item.difficulty
                     ? `<span class="category-label ${item.difficulty.toLowerCase()}">${item.difficulty}</span>`
@@ -189,11 +189,11 @@ export default class InterviewManager {
                 ${item.question}
               </h4>
             </div>
-            <div class="flex items-center">
-              <button class="bookmark-btn ${isBookmarked ? 'active' : ''}" data-id="${itemId}">
+            <div class="flex items-center mt-2 sm:mt-0 sm:ml-auto">
+              <button class="bookmark-btn touch-target-1 ${isBookmarked ? 'active' : ''}" data-id="${itemId}">
                 <i class="fas fa-bookmark"></i>
               </button>
-              <button class="toggle-answer ml-2" data-index="${sectionIndex}-${index}">
+              <button class="toggle-answer touch-target-2 ml-3 px-3 py-1.5 rounded-md bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-sm font-medium transition-colors" data-index="${sectionIndex}-${index}">
                 <i class="fas fa-chevron-down mr-1"></i> Show Answer
               </button>
             </div>
@@ -204,13 +204,13 @@ export default class InterviewManager {
             ${
               item.relatedQuestions
                 ? `
-              <div class="related-questions">
+              <div class="related-questions mt-4 p-3 bg-gray-50 rounded-lg">
                 <h5 class="text-sm font-medium text-gray-700 mb-2">
                   <i class="fas fa-link mr-1"></i> Related Questions:
                 </h5>
-                <div class="related-links">
+                <div class="related-links flex flex-wrap gap-2">
                   ${item.relatedQuestions
-                    .map((q) => `<a href="#" class="related-question-link">${q}</a>`)
+                    .map((q) => `<a href="#" class="related-question-link text-sm py-1 px-2 bg-white border border-gray-200 rounded-md">${q}</a>`)
                     .join('')}
                 </div>
               </div>
@@ -219,7 +219,7 @@ export default class InterviewManager {
             }
             
             <div class="flex justify-end mt-4 pt-3 border-t border-gray-100">
-              <button class="mark-complete-btn px-3 py-1 bg-green-100 text-green-700 rounded-lg text-sm flex items-center hover:bg-green-200 transition-colors" data-id="${itemId}">
+              <button class="mark-complete-btn px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm flex items-center hover:bg-green-200 transition-colors touch-target-2" data-id="${itemId}">
                 <i class="fas fa-${isCompleted ? 'check-circle' : 'circle'} mr-1"></i>
                 ${isCompleted ? 'Completed' : 'Mark as Complete'}
               </button>
@@ -236,17 +236,22 @@ export default class InterviewManager {
 
     // Text answer
     if (item.answer) {
-      answerContent += `<div class="text-gray-800 mb-4 leading-relaxed">${item.answer}</div>`;
+      answerContent += `<div class="text-gray-800 mb-4 leading-relaxed text-base">${item.answer}</div>`;
     }
 
     // Code example
     if (item.codeExample) {
       answerContent += `
-        <div class="code-example relative" data-language="${item.language || 'javascript'}">
-          <pre><code class="${item.language || 'javascript'}">${item.codeExample}</code></pre>
-          <button class="copy-code-btn" data-code="${itemId}">
-            <i class="far fa-copy"></i>
-          </button>
+        <div class="code-example relative rounded-lg overflow-hidden" data-language="${item.language || 'javascript'}">
+          <div class="code-header bg-gray-800 text-white text-xs py-1.5 px-3 flex justify-between items-center">
+            <span>${item.language || 'javascript'}</span>
+            <button class="copy-code-btn text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded transition-colors" data-code="${itemId}">
+              <i class="far fa-copy mr-1"></i> Copy
+            </button>
+          </div>
+          <div class="code-content overflow-x-auto">
+            <pre class="m-0 p-4"><code class="${item.language || 'javascript'}">${item.codeExample}</code></pre>
+          </div>
         </div>
       `;
     }
@@ -254,10 +259,10 @@ export default class InterviewManager {
     // Additional tips
     if (item.tips && item.tips.length) {
       answerContent += `
-        <div class="tips">
-          <h5>Pro Tips</h5>
-          <ul class="list-disc pl-5">
-            ${item.tips.map((tip) => `<li>${tip}</li>`).join('')}
+        <div class="tips mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-300 rounded">
+          <h5 class="font-medium text-yellow-800 mb-2">Pro Tips</h5>
+          <ul class="list-disc pl-5 space-y-1">
+            ${item.tips.map((tip) => `<li class="text-yellow-700">${tip}</li>`).join('')}
           </ul>
         </div>
       `;
@@ -279,13 +284,17 @@ export default class InterviewManager {
           answerContent.classList.remove('hidden');
           answerContent.classList.add('fade-in');
           button.innerHTML = '<i class="fas fa-chevron-up mr-1"></i> Hide Answer';
+          button.classList.add('bg-indigo-100');
 
+          // Smooth scroll to make answer visible
           setTimeout(() => {
+            answerContent.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             answerContent.classList.remove('fade-in');
-          }, 300);
+          }, 100);
         } else {
           // Hide answer
           answerContent.classList.add('fade-out');
+          button.classList.remove('bg-indigo-100');
 
           setTimeout(() => {
             answerContent.classList.add('hidden');
@@ -366,7 +375,7 @@ export default class InterviewManager {
     copyButtons.forEach((button) => {
       button.addEventListener('click', () => {
         const codeId = button.getAttribute('data-code');
-        const codeBlock = container.querySelector(`.code-example[data-code="${codeId}"] code`);
+        const codeBlock = container.querySelector(`.code-example[data-code="${codeId}"] code, .code-example code`);
 
         if (codeBlock) {
           const code = codeBlock.textContent;
@@ -376,12 +385,12 @@ export default class InterviewManager {
             .then(() => {
               // Change button text temporarily
               const originalHTML = button.innerHTML;
-              button.innerHTML = '<i class="fas fa-check"></i>';
-              button.classList.add('bg-green-600');
+              button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+              button.classList.add('bg-green-600', 'text-white');
 
               setTimeout(() => {
                 button.innerHTML = originalHTML;
-                button.classList.remove('bg-green-600');
+                button.classList.remove('bg-green-600', 'text-white');
               }, 1500);
 
               this.uiManager.showToast('Code copied to clipboard', 'success');
