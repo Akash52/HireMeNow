@@ -169,6 +169,36 @@ const conditionalQuestions = [
         category: 'JavaScript Conditionals',
         difficulty: 'hard',
     },
-    ];
+    {
+      id: 'js3',
+      question: 'What does the <code>===</code> operator do?',
+      options: [
+        'Checks for equality of value only',
+        'Checks for equality of value and type',
+        'Assigns a value to a variable',
+        'Checks if a value is truthy',
+      ],
+      correctAnswer: 1,
+      explanation:
+        "The strict equality operator (<code>===</code>) checks if two values have the same value and the same type. For example, <code>'5' === 5</code> is false because one is a string and the other is a number.",
+      category: 'Operators',
+      difficulty: 'easy',
+    },
+    {
+      id: 'js11',
+      question: 'What is the purpose of the <code>use strict</code> directive?',
+      options: [
+        'To enforce stricter parsing and error handling in JavaScript',
+        'To make JavaScript code run faster',
+        'To enable new JavaScript features',
+        'To prevent the use of global variables',
+      ],
+      correctAnswer: 0,
+      explanation:
+        "The 'use strict' directive enables strict mode in JavaScript, which enforces stricter parsing and error handling. It helps catch common coding mistakes and 'unsafe' actions, prevents the use of certain syntax, and more.",
+      category: 'JavaScript Basics',
+      difficulty: 'medium',
+    },
+];
+
 export default conditionalQuestions;
-  

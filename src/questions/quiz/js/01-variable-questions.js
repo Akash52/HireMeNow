@@ -153,8 +153,148 @@ const variableQuestions = [
         "<code>class</code> is a reserved keyword in JavaScript and cannot be used as a variable name. Using reserved keywords as variable names will result in a syntax error. Other reserved keywords include <code>if</code>, <code>for</code>, <code>function</code>, <code>return</code>, <code>const</code>, <code>let</code>, etc. Always check if a word is reserved before using it as a variable name.",
       category: 'JavaScript Variables',
       difficulty: 'easy',
-    }
+    },
+    {
+      id: 'var13',
+      question: 'What\'s the difference between variables declared with var, let, and const regarding hoisting?',
+      options: [
+        'Only var variables are hoisted', 
+        'All three are hoisted, but let and const remain in the Temporal Dead Zone until declaration', 
+        'None of them are hoisted', 
+        'Only const variables are hoisted'
+      ],
+      correctAnswer: 1,
+      explanation:
+        "All variable declarations in JavaScript are hoisted (moved to the top of their scope), but <code>var</code> variables are initialized with <code>undefined</code>, while <code>let</code> and <code>const</code> variables remain uninitialized in the 'Temporal Dead Zone' until the declaration line is executed. This is why accessing <code>let</code> or <code>const</code> before declaration throws a ReferenceError.",
+      category: 'JavaScript Variables',
+      difficulty: 'medium',
+    },
+    {
+      id: 'var14',
+      question: 'What is the output of this code?\n<code>console.log(typeof undeclaredVar);</code>',
+      options: [
+        '"undefined"', 
+        '"null"', 
+        'ReferenceError', 
+        '"object"'
+      ],
+      correctAnswer: 0,
+      explanation:
+        "Using <code>typeof</code> with an undeclared variable doesn't throw an error in JavaScript. Instead, it returns the string <code>\"undefined\"</code>. This is a safety mechanism in JavaScript that allows checking if a variable exists without causing an error. However, directly accessing an undeclared variable without <code>typeof</code> would throw a ReferenceError.",
+      category: 'JavaScript Variables',
+      difficulty: 'medium',
+    },
+    {
+      id: 'var15',
+      question: 'What will the following code output?\n<code>let x = 10;\nfunction test() {\n  console.log(x);\n  let x = 20;\n}\ntest();</code>',
+      options: [
+        '10', 
+        '20', 
+        'undefined', 
+        'ReferenceError'
+      ],
+      correctAnswer: 3,
+      explanation:
+        "This code throws a <code>ReferenceError</code> because of the Temporal Dead Zone. The <code>x</code> inside the function shadows the global <code>x</code>, but it can't be accessed before its declaration within the same scope. Even though there's a console.log before the <code>let x = 20</code> line, the entire scope is affected by the TDZ for that variable.",
+      category: 'JavaScript Variables',
+      difficulty: 'hard',
+    },
+    {
+      id: 'var16',
+      question: 'What does the following code return?\n<code>const arr = [1, 2, 3];\narr.push(4);\nconsole.log(arr);</code>',
+      options: [
+        '[1, 2, 3]', 
+        '[1, 2, 3, 4]', 
+        'TypeError: Cannot add property 3, object is not extensible', 
+        'SyntaxError: Invalid operation'
+      ],
+      correctAnswer: 1,
+      explanation:
+        "When using <code>const</code> with arrays, like with objects, only the binding is immutable. The array itself can still be modified using methods like <code>push()</code>, <code>pop()</code>, <code>splice()</code>, etc. The code adds 4 to the array and outputs <code>[1, 2, 3, 4]</code>. What we can't do is reassign <code>arr</code> to a completely new array.",
+      category: 'JavaScript Variables',
+      difficulty: 'easy',
+    },
+    {
+      id: 'var17',
+      question: 'Which of the following correctly uses array destructuring to assign variables?',
+      options: [
+        'const {a, b} = [1, 2];', 
+        'const [a, b] = [1, 2];', 
+        'const [a, b] = {a: 1, b: 2};', 
+        'const a, b = [1, 2];'
+      ],
+      correctAnswer: 1,
+      explanation:
+        "Array destructuring uses square brackets on the left side to extract values from arrays into distinct variables. <code>const [a, b] = [1, 2];</code> assigns <code>a = 1</code> and <code>b = 2</code>. Curly braces are used for object destructuring, not array destructuring. The position in the array determines which variable gets which value.",
+      category: 'JavaScript Variables',
+      difficulty: 'medium',
+    },
+    {
+      id: 'var18',
+      question: 'What happens when you declare a variable in JavaScript without var, let, or const?',
+      options: [
+        'It becomes a local variable', 
+        'It becomes a global variable attached to the window object (in browsers)', 
+        'It throws a SyntaxError', 
+        'It becomes undefined'
+      ],
+      correctAnswer: 1,
+      explanation:
+        "When you assign a value to a variable without declaring it using <code>var</code>, <code>let</code>, or <code>const</code>, it becomes an automatic global variable attached to the global object (<code>window</code> in browsers). This is considered bad practice as it can lead to unexpected behavior and bugs. Always declare your variables with appropriate keywords.",
+      category: 'JavaScript Variables',
+      difficulty: 'medium',
+    },
+    {
+      id: 'js1',
+      question: 'What is the output of <code>console.log(typeof null)</code>?',
+      options: ['null', 'object', 'undefined', 'number'],
+      correctAnswer: 1,
+      explanation:
+        "In JavaScript, <code>typeof null</code> returns 'object', which is considered a bug in the language. It was supposed to return 'null', but this behavior has been maintained for backward compatibility.",
+      category: 'JavaScript Basics',
+      difficulty: 'easy',
+    },
+    {
+      id: 'js10',
+      question: 'What is the output of <code>console.log(0.1 + 0.2 === 0.3)</code>?',
+      options: ['true', 'false', 'undefined', 'Error'],
+      correctAnswer: 1,
+      explanation:
+        'The output is false. Due to how floating-point numbers are represented in binary, 0.1 + 0.2 actually equals 0.30000000000000004, not exactly 0.3.',
+      category: 'JavaScript Basics',
+      difficulty: 'easy',
+    },
+    {
+      id: 'js12',
+      question:
+        'What is the difference between <code>let</code>, <code>const</code>, and <code>var</code>?',
+      options: [
+        'They are all identical ways to declare variables',
+        'let and const are block-scoped, while var is function-scoped',
+        'const and var are block-scoped, while let is function-scoped',
+        'let and var can be reassigned, while const is for constants only',
+      ],
+      correctAnswer: 1,
+      explanation:
+        "let and const are block-scoped (only accessible within the block they're defined in), while var is function-scoped. Additionally, const variables cannot be reassigned after declaration, while let and var can be.",
+      category: 'Variables',
+      difficulty: 'easy',
+    },
+    {
+      id: 'js15',
+      question: 'What is the purpose of the <code>Symbol</code> type in JavaScript?',
+      options: [
+        'To create unique identifiers',
+        'To represent mathematical symbols',
+        'To encrypt sensitive data',
+        'To create special characters in strings',
+      ],
+      correctAnswer: 0,
+      explanation:
+        'The Symbol type in JavaScript is used to create unique identifiers. Every Symbol value is unique and immutable, making them ideal for object property keys when you want to avoid name collisions.',
+      category: 'Data Types',
+      difficulty: 'hard',
+    },
   ];
   
   export default variableQuestions;
-  

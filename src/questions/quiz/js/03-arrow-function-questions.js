@@ -128,8 +128,33 @@ const arrowFunctionQuestions = [
         "This demonstrates two ways to define arrow functions with no parameters. Both <code>_ => 10</code> and <code>() => 5</code> are valid syntax. The underscore is just a parameter name (by convention often used for unused parameters), while empty parentheses explicitly indicate no parameters. Both functions return their respective values, so the output is 10+5=15. While both syntaxes work, using <code>()</code> for no-parameter functions is generally considered more readable and is the more common convention in modern JavaScript.",
       category: 'Arrow Functions',
       difficulty: 'easy',
-    }
+    },
+    {
+      id: 'arrow11',
+      question: 'What is the advantage of using arrow functions for class properties in this React component?\n<code>class Counter extends React.Component {\n  state = { count: 0 };\n\n  // Method A\n  increment = () => {\n    this.setState({ count: this.state.count + 1 });\n  }\n\n  // Method B\n  decrement() {\n    this.setState({ count: this.state.count - 1 });\n  }\n\n  render() {\n    return (\n      <div>\n        <p>{this.state.count}</p>\n        <button onClick={this.increment}>+</button>\n        <button onClick={this.decrement}>-</button>\n      </div>\n    );\n  }\n}</code>',
+      options: [
+        'Arrow functions are just syntactic sugar; there\'s no practical difference',
+        'Arrow function properties automatically bind "this" to the class instance',
+        'Arrow functions are faster and more memory efficient',
+        'Arrow functions enable the ES6 class property syntax'
+      ],
+      correctAnswer: 1,
+      explanation:
+        "This demonstrates a crucial practical use of arrow functions in class-based React components. The arrow function property <code>increment</code> automatically binds <code>this</code> to the class instance, while the regular method <code>decrement</code> loses its <code>this</code> binding when passed as a callback. When the decrement button is clicked, it will cause a <code>TypeError: Cannot read property 'setState' of undefined</code> because <code>this</code> becomes <code>undefined</code> in strict mode. To fix it, you'd need to manually bind in the constructor (<code>this.decrement = this.decrement.bind(this)</code>) or use an arrow function. This pattern is so common in React that using arrow functions for event handlers became a best practice before hooks were introduced.",
+      category: 'Arrow Functions',
+      difficulty: 'hard',
+    },
+    {
+      id: 'js5',
+      question:
+        'What is the output of the following code?\n<pre><code>let x = 10;\nfunction foo() {\n  console.log(x);\n  let x = 20;\n}\nfoo();</code></pre>',
+      options: ['10', '20', 'undefined', 'ReferenceError'],
+      correctAnswer: 3,
+      explanation:
+        "This code will throw a ReferenceError. Due to the 'temporal dead zone', the variable x inside the function exists but cannot be accessed before its declaration. Even though there's an x in the global scope, the local x shadows it.",
+      category: 'Scope and Hoisting',
+      difficulty: 'medium',
+    },
   ];
   
   export default arrowFunctionQuestions;
-  

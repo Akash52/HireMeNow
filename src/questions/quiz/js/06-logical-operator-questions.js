@@ -149,6 +149,47 @@ const logicalOperatorQuestions = [
       category: 'Logical Operators',
       difficulty: 'hard',
     },
-    ];
+    {
+      id: 'js6',
+      question: 'What is the event loop in JavaScript?',
+      options: [
+        'A design pattern for handling UI events',
+        'A mechanism that allows JavaScript to perform non-blocking operations',
+        'A loop that iterates through all DOM events',
+        'A special type of for loop',
+      ],
+      correctAnswer: 1,
+      explanation:
+        'The event loop is a mechanism that allows JavaScript to perform non-blocking operations despite being single-threaded. It handles executing code, collecting and processing events, and executing queued sub-tasks.',
+      category: 'Asynchronous JavaScript',
+      difficulty: 'medium',
+    },
+    {
+      id: 'js7',
+      question:
+        'What will be the output of the following code?\n<pre><code>console.log(1);\nsetTimeout(() => console.log(2), 0);\nPromise.resolve().then(() => console.log(3));\nconsole.log(4);</code></pre>',
+      options: ['1, 2, 3, 4', '1, 4, 3, 2', '1, 4, 2, 3', '4, 3, 2, 1'],
+      correctAnswer: 1,
+      explanation:
+        'The output will be 1, 4, 3, 2. First, synchronous code executes (1, 4). Then, microtasks like Promises are processed (3). Finally, macrotasks like setTimeout callbacks are executed (2), even with a delay of 0ms.',
+      category: 'Asynchronous JavaScript',
+      difficulty: 'hard',
+    },
+    {
+      id: 'js9',
+      question: 'What is a Promise in JavaScript?',
+      options: [
+        'A guarantee that a function will execute successfully',
+        'An object representing the eventual completion or failure of an asynchronous operation',
+        'A special type of callback function',
+        'A way to promise code will run in the future',
+      ],
+      correctAnswer: 1,
+      explanation:
+        "A Promise is an object representing the eventual completion or failure of an asynchronous operation. It allows you to associate handlers with an asynchronous action's eventual success or failure.",
+      category: 'Asynchronous JavaScript',
+      difficulty: 'medium',
+    },
+];
 
 export default logicalOperatorQuestions;
