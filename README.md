@@ -35,7 +35,7 @@ HireMeNow is a comprehensive interview preparation platform designed to help dev
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/yourusername/HireMeNow.git
+   git clone https://github.com/Akash52/HireMeNow.git
    cd HireMeNow
    ```
 
