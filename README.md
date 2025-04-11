@@ -1,5 +1,4 @@
 # HireMeNow
-https://hiremenow-dev.netlify.app/
 HireMeNow is a comprehensive interview preparation platform designed to help developers prepare for technical interviews through interactive quizzes and structured learning materials.
 
 ![HireMeNow Screenshot](https://i.ibb.co/FLKCPKdQ/Screenshot-from-2025-04-05-21-19-16.png)
