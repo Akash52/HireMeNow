@@ -1,7 +1,7 @@
 # HireMeNow
 HireMeNow is a comprehensive interview preparation platform designed to help developers prepare for technical interviews through interactive quizzes and structured learning materials.
 
-![HireMeNow Screenshot](https://i.ibb.co/FLKCPKdQ/Screenshot-from-2025-04-05-21-19-16.png)
+![HireMeNow Screenshot](https://i.ibb.co/0jL8P5Vt/Hire-Me-Now-Ace-Your-Technical-Interview-Interview-Preparation-Platform-04-11-2025-04-24-PM.png)
 
 ## Features
 
