@@ -1082,6 +1082,83 @@
       });
     </script>
 
+    <!-- Add this before the closing </body> tag -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Fix navigation tab switching
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const mainContainers = {
+          'quiz-container': document.getElementById('quiz-container'),
+          'interview-container': document.getElementById('interview-container'),
+          'ebook-container': document.getElementById('ebook-container')
+        };
+        
+        navButtons.forEach(btn => {
+          btn.addEventListener('click', function() {
+            // Remove active class from all navigation buttons
+            navButtons.forEach(b => {
+              b.classList.remove('active');
+              b.setAttribute('aria-selected', 'false');
+            });
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            this.setAttribute('aria-selected', 'true');
+            
+            // Hide all containers first
+            Object.values(mainContainers).forEach(container => {
+              if (container) container.classList.add('hidden');
+            });
+            
+            // Show only the selected container
+            const targetId = this.getAttribute('aria-controls');
+            if (targetId && mainContainers[targetId]) {
+              mainContainers[targetId].classList.remove('hidden');
+            }
+          });
+        });
+
+        // Fix eBook tab switching
+        const libraryTab = document.getElementById('ebook-library-tab');
+        const readerTab = document.getElementById('ebook-tab');
+        const librarySection = document.getElementById('ebook-library-section');
+        const readerSection = document.getElementById('ebook-reader-section');
+        
+        if (libraryTab && readerTab && librarySection && readerSection) {
+          // Function to show library view
+          function showLibraryView() {
+            // Update tab styles
+            libraryTab.classList.add('border-b-2', 'border-indigo-500', 'text-indigo-600');
+            readerTab.classList.remove('border-b-2', 'border-indigo-500', 'text-indigo-600');
+            readerTab.classList.add('text-gray-500', 'hover:text-gray-700');
+            
+            // Show library section, hide reader section
+            librarySection.classList.remove('hidden');
+            readerSection.classList.add('hidden');
+          }
+          
+          // Function to show reader view
+          function showReaderView() {
+            // Update tab styles
+            readerTab.classList.add('border-b-2', 'border-indigo-500', 'text-indigo-600');
+            libraryTab.classList.remove('border-b-2', 'border-indigo-500', 'text-indigo-600');
+            libraryTab.classList.add('text-gray-500', 'hover:text-gray-700');
+            
+            // Show reader section, hide library section
+            readerSection.classList.remove('hidden');
+            librarySection.classList.add('hidden');
+          }
+          
+          // Add click handlers
+          libraryTab.addEventListener('click', showLibraryView);
+          readerTab.addEventListener('click', showReaderView);
+          
+          // Initialize correct display state - show library by default
+          showLibraryView();
+        }
+      });
+    </script>
+
     <!-- CSS styles for iOS-like interface -->
     <style>
     </style>

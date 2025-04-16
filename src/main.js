@@ -600,6 +600,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       });
     }
+    
+    // Update the existing navigation handlers for quiz and interview to also hide the eBook container
+    const navQuizBtn = document.getElementById('nav-quiz');
+    const navInterviewBtn = document.getElementById('nav-interview');
+    
+    if (navQuizBtn) {
+      const originalClickHandler = navQuizBtn.onclick;
+      navQuizBtn.onclick = function(e) {
+        if (originalClickHandler) originalClickHandler.call(this, e);
+        document.getElementById('ebook-container')?.classList.add('hidden');
+      };
+    }
+    
+    if (navInterviewBtn) {
+      const originalClickHandler = navInterviewBtn.onclick;
+      navInterviewBtn.onclick = function(e) {
+        if (originalClickHandler) originalClickHandler.call(this, e);
+        document.getElementById('ebook-container')?.classList.add('hidden');
+      };
+    }
   }
 
   // Check for browser compatibility

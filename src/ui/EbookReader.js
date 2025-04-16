@@ -181,14 +181,74 @@ export class EbookReader {
   markdownToHtml(markdown) {
     let html = markdown;
     
-    // Convert code blocks
+    // Convert code blocks with copy button functionality
     html = html.replace(/```([\w-]+)?\n([\s\S]*?)\n```/g, (match, language, code) => {
       const lang = language || 'javascript';
-      return `<pre><code class="language-${lang}">${this.escapeHtml(code)}</code></pre>`;
+      const escapedCode = this.escapeHtml(code.trim());
+      const uniqueId = 'code-' + Math.random().toString(36).substring(2, 15);
+      
+      return `
+        <div class="code-block-container relative group">
+          <div class="code-header bg-gray-800 text-gray-300 text-xs py-1 px-3 flex justify-between items-center">
+            <span>${lang}</span>
+            <button class="copy-code-btn" data-clipboard-target="#${uniqueId}" aria-label="Copy code">
+              <i class="fas fa-copy"></i> Copy
+            </button>
+          </div>
+          <pre><code id="${uniqueId}" class="language-${lang}">${escapedCode}</code></pre>
+        </div>
+      `;
     });
     
     // Convert inline code
-    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    html = html.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+    
+    // Convert headers (not handled by our section approach)
+    html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+    html = html.replace(/^##### (.+)$/gm, '<h5>$1</h5>');
+    html = html.replace(/^###### (.+)$/gm, '<h6>$1</h6>');
+    
+    // Convert bold text
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    
+    // Convert italic text
+    html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
+    
+    // Convert blockquotes
+    html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+    
+    // Convert horizontal rules
+    html = html.replace(/^---$/gm, '<hr>');
+    
+    // Convert unordered lists
+    html = html.replace(/^\* (.+)$/gm, '<ul><li>$1</li></ul>');
+    html = html.replace(/^- (.+)$/gm, '<ul><li>$1</li></ul>');
+    // Combine adjacent list items
+    html = html.replace(/<\/ul>\n<ul>/g, '');
+    
+    // Convert ordered lists
+    html = html.replace(/^\d+\. (.+)$/gm, '<ol><li>$1</li></ol>');
+    // Combine adjacent ordered list items
+    html = html.replace(/<\/ol>\n<ol>/g, '');
+    
+    // Convert paragraphs (lines that are not part of other elements)
+    html = html.replace(/^(?!(<h[1-6]|<ul|<ol|<blockquote|<hr|<pre|<div|<p))(.+)$/gm, '<p>$2</p>');
+    
+    // Fix empty lines
+    html = html.replace(/<p><\/p>/g, '');
+    
+    // Convert links
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 underline">$1</a>');
+    
+    // Convert images with alt text and title
+    html = html.replace(/!\[([^\]]+)\]\(([^)]+)(?:\s"([^"]+)")?\)/g, (match, alt, src, title) => {
+      const titleAttr = title ? ` title="${title}"` : '';
+      return `<figure class="my-4">
+        <img src="${src}" alt="${alt}" ${titleAttr} class="rounded-lg max-w-full mx-auto shadow-md" />
+        ${alt ? `<figcaption class="text-center text-sm text-gray-600 mt-2">${alt}</figcaption>` : ''}
+      </figure>`;
+    });
     
     // Return the HTML
     return html;
@@ -294,7 +354,72 @@ export class EbookReader {
       document.querySelectorAll('pre code').forEach((block) => {
         hljs.highlightElement(block);
       });
+      
+      // Initialize clipboard for code blocks
+      this.initializeClipboard();
     }
+  }
+  
+  /**
+   * Initialize clipboard functionality for code blocks
+   */
+  initializeClipboard() {
+    document.querySelectorAll('.copy-code-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const targetId = button.getAttribute('data-clipboard-target');
+        const codeElement = document.querySelector(targetId);
+        
+        if (codeElement) {
+          const textToCopy = codeElement.textContent;
+          
+          // Use the Clipboard API if available
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(textToCopy)
+              .then(() => {
+                // Show copied feedback
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                button.classList.add('copied');
+                
+                // Reset button after 2 seconds
+                setTimeout(() => {
+                  button.innerHTML = originalText;
+                  button.classList.remove('copied');
+                }, 2000);
+              })
+              .catch(err => {
+                console.error('Could not copy text: ', err);
+                this.notificationManager.showToast('Failed to copy to clipboard', 'error');
+              });
+          } else {
+            // Fallback for browsers without Clipboard API
+            const textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            textarea.style.position = 'absolute';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+              document.execCommand('copy');
+              const originalText = button.innerHTML;
+              button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+              button.classList.add('copied');
+              
+              setTimeout(() => {
+                button.innerHTML = originalText;
+                button.classList.remove('copied');
+              }, 2000);
+            } catch (err) {
+              console.error('Could not copy text: ', err);
+              this.notificationManager.showToast('Failed to copy to clipboard', 'error');
+            }
+            
+            document.body.removeChild(textarea);
+          }
+        }
+      });
+    });
   }
   
   /**

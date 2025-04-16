@@ -169,8 +169,17 @@ export class EbookManager {
     const success = await this.ebookReader.loadBook(bookId);
     
     if (success) {
-      // Switch to eBook container
-      document.getElementById('ebook-tab').click();
+      // Make sure eBook container is visible by clicking nav button
+      const ebookNavBtn = document.getElementById('nav-ebook');
+      if (ebookNavBtn) {
+        ebookNavBtn.click();
+      }
+
+      // Switch to reader tab view
+      const readerTab = document.getElementById('ebook-tab');
+      if (readerTab) {
+        readerTab.click();
+      }
       
       // Restore last position if available
       const progress = this.getUserProgressForBook(bookId);
