@@ -69,6 +69,66 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
+
+    <!-- Add highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+    <!-- Add styles for eBook reader -->
+    <style>
+      .ebook-highlight {
+        background-color: rgba(255, 255, 150, 0.4);
+        border-radius: 2px;
+      }
+      .search-highlight {
+        background-color: rgba(255, 165, 0, 0.4);
+        border-radius: 2px;
+      }
+      .bookmark-indicator {
+        color: #4F46E5;
+        margin-right: 0.5rem;
+      }
+      .toc-link.active {
+        color: #4F46E5;
+        font-weight: 500;
+      }
+      .chapter {
+        scroll-margin-top: 5rem;
+      }
+      #ebook-content h1, #ebook-content h2, #ebook-content h3 {
+        scroll-margin-top: 5rem;
+      }
+      .ebook-toc-list {
+        list-style: none;
+        padding-left: 0;
+      }
+      .ebook-toc-sublist {
+        list-style: none;
+        padding-left: 1.5rem;
+      }
+      #ebook-content pre {
+        margin: 1rem 0;
+        border-radius: 0.5rem;
+        background-color: #1e1e1e;
+        overflow-x: auto;
+      }
+      #ebook-content code {
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      }
+      #ebook-content pre code {
+        display: block;
+        padding: 1rem;
+        color: #d4d4d4;
+        line-height: 1.5;
+      }
+      #ebook-content p {
+        margin-bottom: 1rem;
+        line-height: 1.6;
+      }
+      #ebook-content section {
+        margin-bottom: 2rem;
+      }
+    </style>
   </head>
   <body
     class="bg-gradient-to-br from-indigo-50 via-blue-50 to-white font-inter text-gray-800 antialiased relative overflow-x-hidden pb-safe"
@@ -203,6 +263,17 @@
                 >
                   <i class="material-icons-round text-base sm:text-lg" aria-hidden="true">person</i>
                   <span class="hidden xs:inline">Interview</span>
+                </button>
+                <!-- New eBook navigation button -->
+                <button
+                  id="nav-ebook"
+                  class="nav-btn px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-300 flex items-center gap-1.5 sm:gap-2"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="ebook-container"
+                >
+                  <i class="material-icons-round text-base sm:text-lg" aria-hidden="true">book</i>
+                  <span class="hidden xs:inline">eBooks</span>
                 </button>
                 <button
                   id="help-icon"
@@ -667,6 +738,114 @@
           </div>
         </div>
       </section>
+
+      <!-- eBook container -->
+      <section
+        id="ebook-container"
+        class="main-container bg-white/90 backdrop-blur-md rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 p-4 sm:p-10 transition-all duration-500 hover:shadow-[0_20px_50px_rgb(79,70,229,0.08)] mb-20 ios-card hidden"
+      >
+        <!-- Main eBook UI with library and reader views -->
+        <div class="flex flex-col h-[80vh]">
+          <!-- eBook tabs -->
+          <div class="flex border-b border-gray-200 mb-4">
+            <button id="ebook-library-tab" class="ebook-tab-btn py-2 px-4 border-b-2 border-indigo-500 text-indigo-600 font-medium">
+              Library
+            </button>
+            <button id="ebook-tab" class="ebook-tab-btn py-2 px-4 text-gray-500 hover:text-gray-700 font-medium">
+              Reader
+            </button>
+          </div>
+          
+          <!-- eBook Library View -->
+          <div id="ebook-library-section" class="h-full overflow-y-auto">
+            <h2 class="text-xl font-bold text-indigo-900 mb-4">eBook Library</h2>
+            <p class="text-gray-600 mb-6">
+              Enhance your interview preparation with our comprehensive technical ebooks. 
+              Learn at your own pace with these in-depth guides to key programming concepts.
+            </p>
+            
+            <!-- Library grid -->
+            <div id="ebook-library" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              <!-- Books will be dynamically inserted here -->
+              <div class="flex items-center justify-center p-12 bg-gray-50 rounded-xl">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- eBook Reader View -->
+          <div id="ebook-reader-section" class="h-full overflow-hidden hidden flex flex-col">
+            <!-- Reader header -->
+            <div class="border-b border-gray-200 pb-3 mb-4 flex justify-between items-center">
+              <h2 id="ebook-title" class="text-lg sm:text-xl font-bold text-indigo-900 truncate pr-4"></h2>
+              
+              <div class="flex items-center gap-2">
+                <!-- eBook controls -->
+                <div class="flex items-center space-x-1">
+                  <button id="font-size-small" class="px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-100" title="Small text">
+                    A<sup>-</sup>
+                  </button>
+                  <button id="font-size-medium" class="px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-100" title="Medium text">
+                    A
+                  </button>
+                  <button id="font-size-large" class="px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-100" title="Large text">
+                    A<sup>+</sup>
+                  </button>
+                </div>
+                
+                <button id="ebook-bookmark-btn" class="px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-100" title="Add bookmark">
+                  <i class="fas fa-bookmark"></i>
+                </button>
+                
+                <button id="ebook-highlight-btn" class="px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-100" title="Highlight text">
+                  <i class="fas fa-highlighter"></i>
+                </button>
+                
+                <button id="ebook-bookmarks-btn" class="px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-100" title="View bookmarks">
+                  <i class="fas fa-list"></i>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Search bar -->
+            <div class="flex items-center gap-2 mb-4">
+              <div class="relative flex-1">
+                <input
+                  type="text"
+                  id="ebook-search-input"
+                  placeholder="Search in book..."
+                  class="w-full p-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+                <button id="ebook-search-btn" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-indigo-600">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Reader content -->
+            <div class="flex flex-1 overflow-hidden gap-4">
+              <!-- Table of Contents sidebar -->
+              <div class="hidden md:block w-1/4 overflow-y-auto bg-gray-50 p-4 rounded-lg">
+                <h3 class="font-bold text-indigo-900 mb-3">Table of Contents</h3>
+                <div id="ebook-toc" class="text-sm">
+                  <!-- TOC will be inserted here -->
+                </div>
+              </div>
+              
+              <!-- Main content area -->
+              <div class="flex-1 overflow-y-auto p-2 sm:p-4" id="ebook-content">
+                <!-- eBook content will be inserted here -->
+                <div class="flex items-center justify-center h-full">
+                  <div class="text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+                    <p class="text-gray-600">Loading eBook content...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <!-- Mobile-optimized toast notifications -->
@@ -870,6 +1049,36 @@
         document.addEventListener('touchend', function (e) {
           document.querySelector('.mobile-container').classList.remove('pulling');
         });
+      });
+    </script>
+
+    <!-- Add tab switching for eBook sections -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const libraryTab = document.getElementById('ebook-library-tab');
+        const readerTab = document.getElementById('ebook-tab');
+        const librarySection = document.getElementById('ebook-library-section');
+        const readerSection = document.getElementById('ebook-reader-section');
+        
+        if (libraryTab && readerTab && librarySection && readerSection) {
+          libraryTab.addEventListener('click', function() {
+            libraryTab.classList.add('border-b-2', 'border-indigo-500', 'text-indigo-600');
+            readerTab.classList.remove('border-b-2', 'border-indigo-500', 'text-indigo-600');
+            readerTab.classList.add('text-gray-500', 'hover:text-gray-700');
+            
+            librarySection.classList.remove('hidden');
+            readerSection.classList.add('hidden');
+          });
+          
+          readerTab.addEventListener('click', function() {
+            readerTab.classList.add('border-b-2', 'border-indigo-500', 'text-indigo-600');
+            libraryTab.classList.remove('border-b-2', 'border-indigo-500', 'text-indigo-600');
+            libraryTab.classList.add('text-gray-500', 'hover:text-gray-700');
+            
+            readerSection.classList.remove('hidden');
+            librarySection.classList.add('hidden');
+          });
+        }
       });
     </script>
 

@@ -913,3 +913,80 @@ header h1 {
 .nav-tab-group {
   transition: background-color 0.3s ease;
 }
+
+/* eBook Reader Styles */
+.ebook-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ebook-card:hover {
+  transform: translateY(-5px);
+}
+
+#ebook-content {
+  line-height: 1.6;
+}
+
+#ebook-content h1 {
+  @apply text-2xl font-bold text-indigo-900 mb-4 mt-6;
+}
+
+#ebook-content h2 {
+  @apply text-xl font-bold text-indigo-900 mb-3 mt-5;
+}
+
+#ebook-content h3 {
+  @apply text-lg font-bold text-indigo-900 mb-2 mt-4;
+}
+
+#ebook-content p {
+  @apply mb-4;
+}
+
+#ebook-content ul, #ebook-content ol {
+  @apply mb-4 pl-5;
+}
+
+#ebook-content ul {
+  @apply list-disc;
+}
+
+#ebook-content ol {
+  @apply list-decimal;
+}
+
+#ebook-content li {
+  @apply mb-1;
+}
+
+#ebook-content code {
+  @apply text-indigo-600 bg-indigo-50 px-1 py-0.5 rounded;
+}
+
+.ebook-highlight {
+  @apply bg-yellow-100 px-0.5 rounded;
+}
+
+.search-highlight {
+  @apply bg-orange-200 px-0.5 rounded;
+}
+
+.bookmark-indicator {
+  @apply text-indigo-600 mr-2;
+}
+
+.toc-link {
+  @apply block py-1 hover:text-indigo-600 transition-colors cursor-pointer;
+}
+
+.toc-link.active {
+  @apply text-indigo-600 font-medium;
+}
+
+.ebook-tab-btn {
+  @apply transition-colors border-b-2 border-transparent focus:outline-none;
+}
+
+.ebook-tab-btn.active {
+  @apply border-indigo-500 text-indigo-600;
+}

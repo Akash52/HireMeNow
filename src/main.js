@@ -2,6 +2,8 @@ import { QuizManager } from './core/QuizManager.js';
 import { AnalyticsManager } from './analyticsManager.js';
 import UIManager from './uiManager.js';
 import InterviewManager from './interview/InterviewManager.js';
+import { EbookReader } from './ui/EbookReader.js';
+import { EbookManager } from './ui/EbookManager.js';
 
 /**
  * Simple logging function for use before DOM is loaded
@@ -39,7 +41,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const uiManager = new UIManager();
   const analyticsManager = new AnalyticsManager();
   const interviewManager = new InterviewManager(uiManager);
-
+  
+  // Initialize ebook components
+  const ebookReader = new EbookReader(uiManager, uiManager.notificationManager);
+  const ebookManager = new EbookManager(uiManager, ebookReader, uiManager.notificationManager);
+  
   let quizManager = null;
   let selectedQuizType = 'js'; // Default quiz type
   let selectedDifficulty = 'easy'; // Default difficulty
@@ -568,6 +574,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Set up navigation between quiz and interview prep
     setupNavigation();
+
+    // Initialize eBook components
+    ebookManager.init();
+    
+    // Register ebook navigation button
+    const ebookNavBtn = document.getElementById('nav-ebook');
+    if (ebookNavBtn) {
+      ebookNavBtn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+          btn.classList.remove('active');
+          btn.setAttribute('aria-selected', 'false');
+        });
+        
+        ebookNavBtn.classList.add('active');
+        ebookNavBtn.setAttribute('aria-selected', 'true');
+        
+        document.querySelectorAll('.main-container').forEach(container => {
+          container.classList.add('hidden');
+        });
+        
+        const ebookContainer = document.getElementById('ebook-container');
+        if (ebookContainer) {
+          ebookContainer.classList.remove('hidden');
+        }
+      });
+    }
   }
 
   // Check for browser compatibility
@@ -593,5 +625,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (urlParams.has('mode') && urlParams.get('mode') === 'interview') {
     // Switch to interview mode
     document.getElementById('nav-interview')?.click();
+  }
+
+  // Check if the URL has a specific mode parameter to open ebook mode
+  if (urlParams.has('mode') && urlParams.get('mode') === 'ebook') {
+    // Switch to ebook mode
+    document.getElementById('nav-ebook')?.click();
+    
+    // Load specific book if provided
+    if (urlParams.has('book')) {
+      ebookManager.openBook(urlParams.get('book'));
+    }
   }
 });
