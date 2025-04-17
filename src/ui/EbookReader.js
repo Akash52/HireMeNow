@@ -11,6 +11,39 @@ export class EbookReader {
     this.highlights = this.loadHighlights();
     this.fontSize = localStorage.getItem('ebookFontSize') || 'medium';
     this.lastScrollPosition = {};
+    this.theme = localStorage.getItem('ebookTheme') || 'default';
+    this.availableThemes = {
+      default: {
+        name: 'Default',
+        bgColor: 'bg-white',
+        textColor: 'text-gray-800',
+        accentColor: 'indigo'
+      },
+      sepia: {
+        name: 'Sepia',
+        bgColor: 'bg-amber-50',
+        textColor: 'text-yellow-900',
+        accentColor: 'amber'
+      },
+      night: {
+        name: 'Night',
+        bgColor: 'bg-gray-900',
+        textColor: 'text-gray-100',
+        accentColor: 'gray'
+      },
+      forest: {
+        name: 'Forest',
+        bgColor: 'bg-green-50',
+        textColor: 'text-green-900',
+        accentColor: 'green'
+      },
+      ocean: {
+        name: 'Ocean',
+        bgColor: 'bg-blue-50',
+        textColor: 'text-blue-900',
+        accentColor: 'blue'
+      }
+    };
   }
 
   /**
@@ -19,6 +52,7 @@ export class EbookReader {
   init() {
     this.bindEvents();
     this.applyFontSize();
+    this.applyTheme();
   }
 
   /**
@@ -92,6 +126,12 @@ export class EbookReader {
     
     // Restore last scroll position for this book
     this.restoreScrollPosition();
+    
+    // Apply theme
+    this.applyTheme();
+    
+    // Add reading controls
+    this.addReadingControls();
   }
   
   /**
@@ -831,36 +871,227 @@ export class EbookReader {
   }
   
   /**
+   * Add reading controls to the ebook container
+   */
+  addReadingControls() {
+    const container = document.getElementById('ebook-container');
+    if (!container) return;
+    
+    // Check if controls already exist
+    if (document.getElementById('ebook-reading-controls')) return;
+    
+    // Create reading controls
+    const controlsDiv = document.createElement('div');
+    controlsDiv.id = 'ebook-reading-controls';
+    controlsDiv.className = 'fixed bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3 bg-indigo-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-full shadow-lg z-40 transition-all duration-300 hover:bg-indigo-800';
+    
+    // Add control buttons
+    controlsDiv.innerHTML = `
+      <button id="focus-mode-btn" class="p-2 hover:bg-indigo-700 rounded-full" title="Toggle Focus Mode">
+        <i class="fas fa-eye"></i>
+      </button>
+      <button id="theme-toggle-btn" class="p-2 hover:bg-indigo-700 rounded-full" title="Change Theme">
+        <i class="fas fa-palette"></i>
+      </button>
+      <div class="font-controls flex space-x-1">
+        <button id="font-size-small" class="p-2 hover:bg-indigo-700 rounded-full" title="Small Text">
+          <i class="fas fa-text-height"></i><small>-</small>
+        </button>
+        <button id="font-size-medium" class="p-2 hover:bg-indigo-700 rounded-full" title="Medium Text">
+          <i class="fas fa-text-height"></i>
+        </button>
+        <button id="font-size-large" class="p-2 hover:bg-indigo-700 rounded-full" title="Large Text">
+          <i class="fas fa-text-height"></i><small>+</small>
+        </button>
+      </div>
+      <div class="separator border-l border-indigo-700 mx-1"></div>
+      <button id="ebook-bookmark-btn" class="p-2 hover:bg-indigo-700 rounded-full" title="Add Bookmark">
+        <i class="fas fa-bookmark"></i>
+      </button>
+      <button id="ebook-highlight-btn" class="p-2 hover:bg-indigo-700 rounded-full" title="Highlight Text">
+        <i class="fas fa-highlighter"></i>
+      </button>
+      <button id="ebook-bookmarks-btn" class="p-2 hover:bg-indigo-700 rounded-full" title="View Bookmarks">
+        <i class="fas fa-list"></i>
+      </button>
+    `;
+    
+    // Add controls to container
+    document.body.appendChild(controlsDiv);
+    
+    // Auto-hide controls when not interacting
+    let timeoutId;
+    function showControls() {
+      controlsDiv.classList.remove('opacity-0');
+      clearTimeout(timeoutId);
+      
+      timeoutId = setTimeout(() => {
+        if (!controlsDiv.matches(':hover')) {
+          controlsDiv.classList.add('opacity-0');
+        }
+      }, 3000);
+    }
+    
+    controlsDiv.addEventListener('mouseenter', () => {
+      clearTimeout(timeoutId);
+      controlsDiv.classList.remove('opacity-0');
+    });
+    
+    controlsDiv.addEventListener('mouseleave', () => {
+      timeoutId = setTimeout(() => {
+        controlsDiv.classList.add('opacity-0');
+      }, 2000);
+    });
+    
+    document.getElementById('ebook-content').addEventListener('mousemove', showControls);
+    
+    // Add theme selection dropdown event
+    document.getElementById('theme-toggle-btn').addEventListener('click', (e) => {
+      this.showThemeSelector(e);
+    });
+    
+    // Add direct event listeners to font size buttons
+    document.getElementById('font-size-small').addEventListener('click', () => {
+      this.changeFontSize('small');
+    });
+    
+    document.getElementById('font-size-medium').addEventListener('click', () => {
+      this.changeFontSize('medium');
+    });
+    
+    document.getElementById('font-size-large').addEventListener('click', () => {
+      this.changeFontSize('large');
+    });
+    
+    // Add event listeners for other buttons
+    document.getElementById('ebook-bookmark-btn').addEventListener('click', () => {
+      this.toggleBookmark();
+    });
+    
+    document.getElementById('ebook-highlight-btn').addEventListener('click', () => {
+      this.highlightSelection();
+    });
+    
+    document.getElementById('ebook-bookmarks-btn').addEventListener('click', () => {
+      this.showBookmarksList();
+    });
+    
+    document.getElementById('focus-mode-btn').addEventListener('click', () => {
+      const container = document.getElementById('ebook-container');
+      const isActive = container.classList.contains('focus-mode');
+      
+      if (window.ebookManager) {
+        window.ebookManager.toggleFocusMode(!isActive);
+      }
+    });
+    
+    // Initially hide controls after 3s
+    showControls();
+  }
+  
+  /**
+   * Show theme selector dropdown
+   * @param {Event} e - Click event
+   */
+  showThemeSelector(e) {
+    e.stopPropagation();
+    
+    // Remove existing theme selector if present
+    const existingSelector = document.getElementById('theme-selector');
+    if (existingSelector) {
+      existingSelector.remove();
+      return;
+    }
+    
+    // Create theme selector
+    const themeSelector = document.createElement('div');
+    themeSelector.id = 'theme-selector';
+    themeSelector.className = 'absolute bottom-full mb-2 bg-white rounded-lg shadow-lg p-3 min-w-[150px] text-gray-800 grid grid-cols-1 gap-2 transform animate-pop-in';
+    
+    // Add themes
+    for (const [themeId, theme] of Object.entries(this.availableThemes)) {
+      const themeButton = document.createElement('button');
+      themeButton.className = `
+        flex items-center p-2 rounded hover:bg-gray-100 transition-colors
+        ${this.theme === themeId ? 'bg-gray-200' : ''}
+      `;
+      themeButton.innerHTML = `
+        <span class="w-4 h-4 rounded-full ${theme.bgColor} border border-gray-300 mr-3"></span>
+        ${theme.name}
+      `;
+      
+      themeButton.addEventListener('click', () => {
+        this.changeTheme(themeId);
+        themeSelector.remove();
+      });
+      
+      themeSelector.appendChild(themeButton);
+    }
+    
+    // Position the dropdown
+    const button = e.currentTarget;
+    const buttonRect = button.getBoundingClientRect();
+    
+    // Create a parent for positioning (relative to the viewport)
+    const positionWrapper = document.createElement('div');
+    positionWrapper.style.position = 'fixed';
+    positionWrapper.style.zIndex = '100';
+    positionWrapper.style.left = `${buttonRect.left + buttonRect.width/2}px`;
+    positionWrapper.style.bottom = `${window.innerHeight - buttonRect.top + 10}px`;
+    positionWrapper.style.transform = 'translateX(-50%)';
+    positionWrapper.appendChild(themeSelector);
+    
+    // Add to page
+    document.body.appendChild(positionWrapper);
+    
+    // Close when clicking outside
+    document.addEventListener('click', function closeThemeSelector(event) {
+      if (!themeSelector.contains(event.target) && event.target !== button) {
+        if (document.body.contains(positionWrapper)) {
+          document.body.removeChild(positionWrapper);
+        }
+        document.removeEventListener('click', closeThemeSelector);
+      }
+    });
+  }
+  
+  /**
+   * Change theme
+   * @param {string} themeId - ID of the theme to apply
+   */
+  changeTheme(themeId) {
+    if (!this.availableThemes[themeId]) return;
+    
+    this.theme = themeId;
+    localStorage.setItem('ebookTheme', themeId);
+    this.applyTheme();
+    
+    this.notificationManager.showToast(`Theme changed to ${this.availableThemes[themeId].name}`, 'info');
+  }
+  
+  /**
+   * Apply current theme
+   */
+  applyTheme() {
+    const contentArea = document.getElementById('ebook-content');
+    if (!contentArea) return;
+    
+    const theme = this.availableThemes[this.theme] || this.availableThemes.default;
+    
+    // Remove all theme classes
+    Object.values(this.availableThemes).forEach(theme => {
+      contentArea.classList.remove(theme.bgColor, theme.textColor);
+    });
+    
+    // Add new theme classes
+    contentArea.classList.add(theme.bgColor, theme.textColor);
+  }
+
+  /**
    * Bind events for eBook reader
    */
   bindEvents() {
-    document.addEventListener('click', (e) => {
-      // Handle bookmark toggle button
-      if (e.target.closest('#ebook-bookmark-btn')) {
-        this.toggleBookmark();
-      }
-      
-      // Handle highlight button
-      if (e.target.closest('#ebook-highlight-btn')) {
-        this.highlightSelection();
-      }
-      
-      // Handle bookmarks list button
-      if (e.target.closest('#ebook-bookmarks-btn')) {
-        this.showBookmarksList();
-      }
-      
-      // Handle font size buttons
-      if (e.target.closest('#font-size-small')) {
-        this.changeFontSize('small');
-      }
-      if (e.target.closest('#font-size-medium')) {
-        this.changeFontSize('medium');
-      }
-      if (e.target.closest('#font-size-large')) {
-        this.changeFontSize('large');
-      }
-    });
+    // Most button handlers are now attached directly in addReadingControls
     
     // Save scroll position when user scrolls
     const contentArea = document.getElementById('ebook-content');
