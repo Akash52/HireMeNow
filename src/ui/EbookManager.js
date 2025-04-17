@@ -68,7 +68,7 @@ export class EbookManager {
         id: 'js-prototypes',
         title: 'JavaScript Prototypes and Inheritance',
         description: 'A comprehensive guide to JavaScript prototypes, inheritance patterns, and performance optimization techniques.',
-        cover: '/src/assets/js-prototype-cover.png',
+        cover: 'https://i.ibb.co/HD2k3CNc/js-prototype-cover.png',
         author: 'HireMeNow Team',
         tags: ['javascript', 'prototypes', 'inheritance', 'performance'],
         chapters: 8,
@@ -98,10 +98,10 @@ export class EbookManager {
         <div class="ebook-card p-4 bg-white rounded-xl shadow-md border border-gray-100 transition-all hover:shadow-lg">
           <div class="aspect-w-2 aspect-h-3 mb-3 bg-gray-100 rounded overflow-hidden">
             <img 
-              src="${book.cover || '/src/assets/default-book-cover.png'}" 
+              src="${book.cover || 'https://i.ibb.co/wNWP732H/default-book-cover.jpg'}" 
               alt="Cover of ${book.title}"
               class="object-cover w-full h-full"
-              onerror="this.src='/src/assets/default-book-cover.png'"
+              onerror="this.src='https://i.ibb.co/wNWP732H/default-book-cover.jpg'"
             />
           </div>
           <h3 class="font-bold text-indigo-900 mb-1">${book.title}</h3>
