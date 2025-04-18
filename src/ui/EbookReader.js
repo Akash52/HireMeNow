@@ -64,7 +64,7 @@ export class EbookReader {
       // Currently we only support JSEbook
       if (bookId === 'js-prototypes') {
         // Use fetch instead of import for markdown files
-        const response = await fetch('/src/questions/ebook/JSEbook.md');
+        const response = await fetch('https://raw.githubusercontent.com/Akash52/HireMeNow/main/src/questions/ebook/JSEbook.md');
         if (!response.ok) {
           throw new Error(`Failed to fetch book content: ${response.status}`);
         }
