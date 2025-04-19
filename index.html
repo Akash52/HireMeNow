@@ -217,9 +217,9 @@
     >
       <div class="container mx-auto px-4 sm:px-6">
         <div class="flex items-center justify-between">
-          <div class="flex items-center">
+          <div class="flex items-center" id="logo-container" style="cursor:pointer;" title="Go to Home">
             <div
-              class="h-10 w-10 sm:h-12 sm:w-12 bg-white rounded-xl flex items-center justify-center shadow-md mr-3 transform transition-transform hover:scale-105 active:scale-95"
+              class="h-10 w-10 sm:h-12 sm:w-12 bg-white rounded-xl flex items-center justify-center shadow-md mr-3 transform transition-transform hover:scale-105 active:scale-95 brand-logo"
             >
               <span
                 class="bg-gradient-to-br from-indigo-600 to-indigo-800 text-transparent bg-clip-text font-bold text-xl sm:text-2xl"
@@ -228,10 +228,10 @@
               >
             </div>
             <div>
-              <h1 class="text-xl sm:text-3xl font-bold text-white tracking-tight ios-text">
+              <h1 class="text-xl sm:text-3xl font-bold text-white tracking-tight ios-text brand-text">
                 HireMeNow
               </h1>
-              <p class="text-xs sm:text-base text-indigo-100 tracking-wide">
+              <p class="text-xs sm:text-base text-indigo-100 tracking-wide app-name">
                 Ace your interview with confidence
               </p>
             </div>
@@ -1098,6 +1098,63 @@
     <!-- Add this before the closing </body> tag -->
     <script>
       document.addEventListener('DOMContentLoaded', function() {
+        // Setup home logo navigation
+        const homeElements = [
+          document.getElementById('logo-container'),
+          document.querySelector('.brand-logo'),
+          document.querySelector('.brand-text'),
+          document.querySelector('.app-name')
+        ];
+        
+        // Add click handler to home elements
+        homeElements.forEach(element => {
+          if (element) {
+            element.addEventListener('click', () => {
+              // Check if router is available
+              if (window.appRouter) {
+                // Navigate to home (quiz is the default route)
+                window.appRouter.navigate('quiz');
+                
+                // Get quizManager from global scope
+                const quizManager = window.quizManager;
+                
+                // If we're in an active quiz, ask for confirmation
+                if (quizManager && !quizManager.hasShownResults) {
+                  // Confirm before leaving the quiz
+                  if (confirm('Are you sure you want to leave your current quiz?')) {
+                    if (typeof quizManager.stopTimer === 'function') {
+                      quizManager.stopTimer();
+                    }
+                    
+                    // Show the start screen
+                    const uiManager = window.uiManager;
+                    if (uiManager && typeof uiManager.showStartScreen === 'function') {
+                      uiManager.showStartScreen();
+                    }
+                  }
+                } else {
+                  // If no active quiz, just show the start screen
+                  const uiManager = window.uiManager;
+                  if (uiManager && typeof uiManager.showStartScreen === 'function') {
+                    uiManager.showStartScreen();
+                  }
+                }
+                
+                // Track the navigation event if analytics is available
+                const analyticsManager = window.analyticsManager;
+                if (analyticsManager && typeof analyticsManager.trackEvent === 'function') {
+                  analyticsManager.trackEvent('navigate_home', {
+                    from_page: window.appRouter.getCurrentRoute().name
+                  });
+                }
+              } else {
+                // Fallback if router is not available
+                location.href = '/';
+              }
+            });
+          }
+        });
+
         // Fix navigation tab switching
         const navButtons = document.querySelectorAll('.nav-btn');
         const mainContainers = {
@@ -1174,6 +1231,10 @@
 
     <!-- CSS styles for iOS-like interface -->
     <style>
+      /* Add pointer cursor to brand elements */
+      .brand-logo, .brand-text, .app-name, #logo-container {
+        cursor: pointer;
+      }
     </style>
   </body>
 </html>

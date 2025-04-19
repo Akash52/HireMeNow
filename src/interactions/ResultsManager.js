@@ -1,6 +1,12 @@
 export class ResultsManager {
   constructor(uiManager) {
     this.uiManager = uiManager;
+    this.shareableUrl = window.location.href;
+  }
+
+  setShareableUrl(url) {
+    this.shareableUrl = url;
+    return this;
   }
 
   saveQuizResults(quizType, difficulty, score, questions, userAnswers) {
@@ -49,24 +55,31 @@ export class ResultsManager {
       });
     }
 
-    try {
-      if (navigator.share) {
-        navigator
-          .share({
-            title: 'My HireMeNow Quiz Results',
-            text: shareText,
-            url: window.location.href,
-          })
-          .catch((err) => {
-            console.warn('Share failed:', err);
-            this.fallbackShare(shareText);
-          });
-      } else {
-        this.fallbackShare(shareText);
+    // Use the properly formatted URL for sharing
+    if (navigator.share) {
+      navigator.share({
+        title: `My ${quizType.toUpperCase()} Quiz Results - ${score}%`,
+        text: `I scored ${score}% on the ${quizType.toUpperCase()} ${difficulty} quiz! Can you beat my score?`,
+        url: this.shareableUrl
+      })
+        .then(() => {
+          analyticsManager.trackEvent('share_results_success', { method: 'web_share_api' });
+        })
+        .catch((error) => {
+          analyticsManager.trackEvent('share_results_error', { method: 'web_share_api', error: error.message });
+        });
+    } else {
+      // Fallback for browsers that don't support navigator.share
+      try {
+        navigator.clipboard.writeText(
+          `I scored ${score}% on the ${quizType.toUpperCase()} ${difficulty} quiz! Can you beat my score? ${this.shareableUrl}`
+        );
+        this.uiManager.showToast('Results copied to clipboard!', 'success');
+        analyticsManager.trackEvent('share_results_success', { method: 'clipboard' });
+      } catch (error) {
+        this.uiManager.showToast('Failed to copy results.', 'error');
+        analyticsManager.trackEvent('share_results_error', { method: 'clipboard', error: error.message });
       }
-    } catch (error) {
-      console.error('Error sharing results:', error);
-      this.fallbackShare(shareText);
     }
   }
 

@@ -75,6 +75,15 @@ export class QuizManager {
       this.timerManager.startTimer();
       this.hasShownResults = false;
       this.quizState.saveState();
+
+      // Update URL to include quiz state
+      if (window.appRouter) {
+        window.appRouter.navigate('quiz', {
+          type: this.quizType,
+          difficulty: this.difficulty,
+          state: 'active'
+        });
+      }
     } catch (error) {
       console.error('Error starting quiz:', error);
       this.uiManager.showError('Could not start quiz. Please try again.');
@@ -291,6 +300,21 @@ export class QuizManager {
   }
 
   shareResults(analyticsManager) {
+    // Update the shareResults method to include proper URL for sharing
+    if (window.appRouter) {
+      const shareUrl = new URL(window.location.href);
+      const params = new URLSearchParams(shareUrl.search);
+      
+      params.set('route', 'quiz');
+      params.set('type', this.quizType);
+      params.set('difficulty', this.difficulty);
+      
+      shareUrl.search = params.toString();
+      
+      // Pass the shareable URL to the resultsManager
+      this.resultsManager.setShareableUrl(shareUrl.toString());
+    }
+    
     this.resultsManager.shareResults(
       this.score,
       this.shuffledQuestions,
@@ -330,5 +354,12 @@ export class QuizManager {
         this.togglePause();
       }
     });
+  }
+
+  // Make sure we have a stopTimer method if it's not already defined
+  stopTimer() {
+    if (this.timerManager) {
+      this.timerManager.stopTimer();
+    }
   }
 }

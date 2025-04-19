@@ -4,6 +4,7 @@ import UIManager from './uiManager.js';
 import InterviewManager from './interview/InterviewManager.js';
 import { EbookReader } from './ui/EbookReader.js';
 import { EbookManager } from './ui/EbookManager.js';
+import { Router } from './router/Router.js';
 
 /**
  * Simple logging function for use before DOM is loaded
@@ -177,34 +178,27 @@ document.addEventListener('DOMContentLoaded', async () => {
    * Setup navigation between quiz and interview prep
    */
   function setupNavigation() {
-    const quizContainer = document.getElementById('quiz-container');
-    const interviewContainer = document.getElementById('interview-container');
     const navQuizBtn = document.getElementById('nav-quiz');
     const navInterviewBtn = document.getElementById('nav-interview');
+    const navEbookBtn = document.getElementById('nav-ebook');
 
     if (navQuizBtn && navInterviewBtn) {
       navQuizBtn.addEventListener('click', () => {
-        quizContainer.classList.remove('hidden');
-        interviewContainer.classList.add('hidden');
-        navQuizBtn.classList.add('active');
-        navInterviewBtn.classList.remove('active');
-        analyticsManager.trackEvent('view_quiz_section', {});
+        if (isLoading) return;
+        router.navigate('quiz');
       });
 
       navInterviewBtn.addEventListener('click', () => {
-        quizContainer.classList.add('hidden');
-        interviewContainer.classList.remove('hidden');
-        navQuizBtn.classList.remove('active');
-        navInterviewBtn.classList.add('active');
-
-        // Initialize the interview content if it hasn't been loaded yet
-        if (!interviewManager.isInitialized) {
-          interviewManager.init();
-          interviewManager.isInitialized = true;
-        }
-
-        analyticsManager.trackEvent('view_interview_section', {});
+        if (isLoading) return;
+        router.navigate('interview');
       });
+      
+      if (navEbookBtn) {
+        navEbookBtn.addEventListener('click', () => {
+          if (isLoading) return;
+          router.navigate('ebook');
+        });
+      }
     }
   }
 
@@ -228,6 +222,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (newQuizType && questionSets[newQuizType]) {
           selectedQuizType = newQuizType;
           analyticsManager.trackEvent('select_quiz_type', { type: selectedQuizType });
+
+          // Update route to include the selected quiz type
+          if (window.appRouter && window.appRouter.getCurrentRoute().name === 'quiz') {
+            window.appRouter.navigate('quiz', { 
+              type: selectedQuizType,
+              difficulty: selectedDifficulty
+            });
+          }
 
           // Prefetch this question set immediately
           prefetchQuestionSet(selectedQuizType);
@@ -254,8 +256,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         button.classList.add('active');
 
         // Update selected difficulty
-        selectedDifficulty = button.getAttribute('data-level') || 'easy';
-        analyticsManager.trackEvent('select_difficulty', { level: selectedDifficulty });
+        const newDifficulty = button.getAttribute('data-difficulty');
+        if (newDifficulty) {
+          selectedDifficulty = newDifficulty;
+          analyticsManager.trackEvent('select_difficulty', { level: selectedDifficulty });
+          
+          // Update route to include the selected difficulty
+          if (window.appRouter && window.appRouter.getCurrentRoute().name === 'quiz') {
+            window.appRouter.navigate('quiz', { 
+              type: selectedQuizType,
+              difficulty: selectedDifficulty
+            });
+          }
+        }
       });
     });
   }
@@ -575,6 +588,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Set up navigation between quiz and interview prep
     setupNavigation();
 
+    // Add home logo/brand text navigation
+    setupHomeLogo();
+
     // Initialize eBook components
     ebookManager.init();
     
@@ -622,6 +638,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  /**
+   * Set up the home logo/brand text to redirect to home page
+   */
+  function setupHomeLogo() {
+    // Get all elements that should navigate to home page
+    const homeElements = [
+      document.querySelector('.brand-logo'), // Logo image
+      document.querySelector('.brand-text'), // Brand text
+      document.querySelector('header .logo'), // Header logo container
+      document.querySelector('.app-name'), // App name text
+    ];
+
+    // Add click handler to all home navigation elements (if they exist)
+    homeElements.forEach(element => {
+      if (element) {
+        element.style.cursor = 'pointer'; // Make it clear it's clickable
+        element.setAttribute('title', 'Go to home page'); // Accessibility hint
+        element.addEventListener('click', () => {
+          // Navigate to home (which is the quiz route by default)
+          if (window.appRouter) {
+            window.appRouter.navigate('quiz');
+            
+            // If we were in a quiz and want to go back to selection screen
+            if (quizManager && !quizManager.hasShownResults) {
+              // Ask for confirmation to leave current quiz
+              if (confirm('Are you sure you want to leave your current quiz?')) {
+                quizManager.stopTimer();
+                quizManager = null;
+                uiManager.showStartScreen();
+              }
+            } else {
+              // If no active quiz, just show the start screen
+              uiManager.showStartScreen();
+            }
+            
+            analyticsManager.trackEvent('navigate_home', {
+              from_page: window.appRouter.getCurrentRoute().name
+            });
+          }
+        });
+      }
+    });
+  }
+
   // Check for browser compatibility
   checkBrowserCompatibility();
 
@@ -640,21 +700,123 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize keyboard shortcuts
   initKeyboardShortcuts();
 
-  // Check if the URL has a specific mode parameter to open interview mode
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.has('mode') && urlParams.get('mode') === 'interview') {
-    // Switch to interview mode
-    document.getElementById('nav-interview')?.click();
-  }
-
-  // Check if the URL has a specific mode parameter to open ebook mode
-  if (urlParams.has('mode') && urlParams.get('mode') === 'ebook') {
-    // Switch to ebook mode
-    document.getElementById('nav-ebook')?.click();
-    
-    // Load specific book if provided
-    if (urlParams.has('book')) {
-      ebookManager.openBook(urlParams.get('book'));
-    }
-  }
+  // Initialize router (add this before the existing URL parameter checks)
+  const router = new Router();
+  
+  // Register routes
+  router
+    .register('quiz', (params) => {
+      // Show quiz section
+      const quizContainer = document.getElementById('quiz-container');
+      const interviewContainer = document.getElementById('interview-container');
+      const ebookContainer = document.getElementById('ebook-container');
+      const navQuizBtn = document.getElementById('nav-quiz');
+      const navInterviewBtn = document.getElementById('nav-interview');
+      const navEbookBtn = document.getElementById('nav-ebook');
+      
+      quizContainer.classList.remove('hidden');
+      interviewContainer.classList.add('hidden');
+      if (ebookContainer) ebookContainer.classList.add('hidden');
+      
+      navQuizBtn.classList.add('active');
+      navInterviewBtn.classList.remove('active');
+      if (navEbookBtn) navEbookBtn.classList.remove('active');
+      
+      // Handle quiz parameters (type, difficulty)
+      if (params.type && questionSets[params.type]) {
+        const typeBtn = document.querySelector(`.quiz-type-btn[data-type="${params.type}"]`);
+        if (typeBtn) {
+          document.querySelectorAll('.quiz-type-btn').forEach(btn => btn.classList.remove('active'));
+          typeBtn.classList.add('active');
+          selectedQuizType = params.type;
+          prefetchQuestionSet(selectedQuizType);
+        }
+      }
+      
+      if (params.difficulty) {
+        const difficultyBtn = document.querySelector(`.difficulty-btn[data-difficulty="${params.difficulty}"]`);
+        if (difficultyBtn) {
+          document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+          difficultyBtn.classList.add('active');
+          selectedDifficulty = params.difficulty;
+        }
+      }
+      
+      analyticsManager.trackEvent('view_quiz_section', {
+        from_route: true,
+        type: params.type || selectedQuizType,
+        difficulty: params.difficulty || selectedDifficulty
+      });
+    })
+    .register('interview', (params) => {
+      // Show interview section
+      const quizContainer = document.getElementById('quiz-container');
+      const interviewContainer = document.getElementById('interview-container');
+      const ebookContainer = document.getElementById('ebook-container');
+      const navQuizBtn = document.getElementById('nav-quiz');
+      const navInterviewBtn = document.getElementById('nav-interview');
+      const navEbookBtn = document.getElementById('nav-ebook');
+      
+      quizContainer.classList.add('hidden');
+      interviewContainer.classList.remove('hidden');
+      if (ebookContainer) ebookContainer.classList.add('hidden');
+      
+      navQuizBtn.classList.remove('active');
+      navInterviewBtn.classList.add('active');
+      if (navEbookBtn) navEbookBtn.classList.remove('active');
+      
+      // Initialize the interview content if it hasn't been loaded yet
+      if (!interviewManager.isInitialized) {
+        interviewManager.init();
+        interviewManager.isInitialized = true;
+      }
+      
+      // Handle specific topic if provided
+      if (params.topic) {
+        interviewManager.selectTopic(params.topic);
+      }
+      
+      analyticsManager.trackEvent('view_interview_section', {
+        from_route: true,
+        topic: params.topic || null
+      });
+    })
+    .register('ebook', (params) => {
+      // Show ebook section if it exists
+      const quizContainer = document.getElementById('quiz-container');
+      const interviewContainer = document.getElementById('interview-container');
+      const ebookContainer = document.getElementById('ebook-container');
+      const navQuizBtn = document.getElementById('nav-quiz');
+      const navInterviewBtn = document.getElementById('nav-interview');
+      const navEbookBtn = document.getElementById('nav-ebook');
+      
+      if (!ebookContainer || !navEbookBtn) {
+        // Fallback to quiz section if ebook doesn't exist
+        router.navigate('quiz');
+        return;
+      }
+      
+      quizContainer.classList.add('hidden');
+      interviewContainer.classList.add('hidden');
+      ebookContainer.classList.remove('hidden');
+      
+      navQuizBtn.classList.remove('active');
+      navInterviewBtn.classList.remove('active');
+      navEbookBtn.classList.add('active');
+      
+      // Initialize and load specific book if provided
+      if (params.book) {
+        ebookManager.openBook(params.book);
+      }
+      
+      analyticsManager.trackEvent('view_ebook_section', {
+        from_route: true,
+        book: params.book || null
+      });
+    })
+    .setDefault('quiz')
+    .init();
+  
+  // Make router available globally to other modules
+  window.appRouter = router;
 });
