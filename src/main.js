@@ -77,275 +77,316 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /**
    * Register service worker for PWA functionality
-   */ally
+   */
   async function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-      try {red prompt event
+      try {
         const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-        console.log('Service worker registered with scope:', reg.scope);
+        logRegistrationSuccess(reg.scope);
         
-        // Add install prompt handlinger('beforeinstallprompt', (e) => {
-        let deferredPrompt;ally showing the prompt
+        // Add install prompt handler
+        let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
           // Prevent Chrome 67 and earlier from automatically showing the prompt
           e.preventDefault();
           // Stash the event so it can be triggered later
           deferredPrompt = e;
           
-          // Update UI to notify the user they can add to home screenyId('install-button');
+          // Update UI to notify the user they can add to home screen
           const installButton = document.createElement('button');
-          installButton.id = 'install-button';// If the button doesn't exist, create it
-          installButton.className = 'fixed bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-full shadow-lg animate-pulse z-50';
-          installButton.innerHTML = 'Install App';
-          document.body.appendChild(installButton);tall-button';
-          'fixed bottom-20 right-4 bg-indigo-600 text-white px-4 py-3 rounded-full shadow-lg animate-pulse z-50 flex items-center space-x-2';
-          installButton.addEventListener('click', async () => {= '<i class="material-icons-round">add_to_home_screen</i><span>Install App</span>';
+          installButton.id = 'install-button';
+          installButton.className = 'fixed bottom-4 right-4 bg-indigo-600 text-white px-4 py-3 rounded-full shadow-lg animate-pulse z-50 flex items-center space-x-2';
+          installButton.innerHTML = '<i class="material-icons-round">add_to_home_screen</i><span>Install App</span>';
+          document.body.appendChild(installButton);
+          
+          installButton.addEventListener('click', async () => {
             // Hide our user interface that shows our install button
-            installButton.remove();
+            installButton.style.display = 'none';
+            
             // Show the install prompt
             deferredPrompt.prompt();
-            // Wait for the user to respond to the promptbutton
-            const { outcome } = await deferredPrompt.userChoice; installButton.style.display = 'none';
-            console.log(`User response to the install prompt: ${outcome}`);   
-            // We've used the prompt, and can't use it again, throw it awayhe installation prompt
+            
+            // Wait for the user to respond to the prompt
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            
+            // We've used the prompt, and can't use it again, throw it away
             deferredPrompt = null;
-          });       
-        });         // Wait for the user to respond to the prompt
-      } catch (error) {           const { outcome } = await deferredPrompt.userChoice;
-        console.error('Service worker registration failed:', error);              
-      }         // Log the outcome of the user choice
-    }l prompt: ${outcome}`);
-  }         
-and can't use it again, throw it away
-  /**= null;
+            
+            // Track installation events if analytics is available
+            if (analyticsManager) {
+              analyticsManager.trackEvent('pwa_install', { outcome });
+            }
+          });
+        });
+        
+        // Listen for the appinstalled event
+        window.addEventListener('appinstalled', (evt) => {
+          console.log('PWA successfully installed');
+          
+          // Track installation events if analytics is available
+          if (analyticsManager) {
+            analyticsManager.trackEvent('pwa_installed', { success: true });
+          }
+          
+          // Remove the install button if it exists
+          const installButton = document.getElementById('install-button');
+          if (installButton) {
+            installButton.remove();
+          }
+          
+          // Show a success toast notification if UI manager is available
+          if (uiManager && typeof uiManager.showToast === 'function') {
+            uiManager.showToast('You can now use HireMeNow offline.', 'success');
+          }
+        });
+        
+        // Show appropriate notifications for online/offline status
+        window.addEventListener('online', () => {
+          if (uiManager && typeof uiManager.showToast === 'function') {
+            uiManager.showToast('You are back online', 'success');
+          }
+        });
+        
+        window.addEventListener('offline', () => {
+          if (uiManager && typeof uiManager.showToast === 'function') {
+            uiManager.showToast('You are offline. HireMeNow will continue to work.', 'info');
+          }
+        });
+      } catch (error) {
+        console.error('Service worker registration failed:', error);
+      }
+    }
+  }
+
+  /**
    * Check browser compatibility for required features
-   */   // Track installation events if analytics is available
+   */
   function checkBrowserCompatibility() {
-    // Check for localStoragetrackEvent('pwa_install', { outcome });
+    // Check for localStorage
     const hasLocalStorage = (() => {
       try {
         localStorage.setItem('test', 'test');
-        localStorage.removeItem('test'); });
+        localStorage.removeItem('test');
         return true;
-      } catch (e) {        // Listen for the appinstalled event
-        return false;ener('appinstalled', (evt) => {
+      } catch (e) {
+        return false;
       }
-    })();     console.log('PWA successfully installed');
-          
-    if (!hasLocalStorage) {alytics is available
+    })();
+    
+    if (!hasLocalStorage) {
       uiManager.showToast('Your browser does not support saving quiz progress.', 'warning');
-    }csManager.trackEvent('pwa_installed', { success: true });
+    }
 
     // Check for other essential features
-    if (!window.JSON || typeof JSON.parse !== 'function') {  // Remove the install button if it exists
-      uiManager.showToast(     const installButton = document.getElementById('install-button');
-        'Your browser is outdated and may not work correctly with this application.',       if (installButton) {
-        'error'            installButton.remove();
-      );     }
+    if (!window.JSON || typeof JSON.parse !== 'function') {
+      uiManager.showToast(
+        'Your browser is outdated and may not work correctly with this application.',
+        'error'
+      );
     }
-  }     // Show a success toast notification if UI manager is available
-peof window.uiManager.showToast === 'function') {
-  /** use HireMeNow offline.', 'success');
+  }
+
+  /**
    * Initialize keyboard shortcuts
-   */        });
+   */
   function initKeyboardShortcuts() {
-    // Let the AccessibilityManager in UIManager handle most keyboard shortcutsw appropriate notifications
+    // Let the AccessibilityManager in UIManager handle most keyboard shortcuts
     // We'll only handle application-specific shortcuts here
-          if (window.uiManager && typeof window.uiManager.showToast === 'function') {
-    document.addEventListener('keydown', (event) => {You are back online', 'success');
+    document.addEventListener('keydown', (event) => {
       // Prevent shortcuts when inputs are focused
       if (event.target.matches('input, textarea, select')) return;
 
-      // Shortcut: Alt+R to restart quiz window.addEventListener('offline', () => {
-      if (event.key === 'r' && event.altKey && quizManager) {          if (window.uiManager && typeof window.uiManager.showToast === 'function') {
-        event.preventDefault();ou are offline. HireMeNow will continue to work.', 'info');
+      // Shortcut: Alt+R to restart quiz
+      if (event.key === 'r' && event.altKey && quizManager) {
+        event.preventDefault();
         quizManager.restartQuiz();
       }
 
-      // Shortcut: Alt+S to share results catch (error) {
-      if (event.key === 's' && event.altKey && quizManager && quizManager.hasShownResults) { console.error('Service worker registration failed:', error);
-        event.preventDefault();   }
-        quizManager.shareResults(analyticsManager);    }
+      // Shortcut: Alt+S to share results
+      if (event.key === 's' && event.altKey && quizManager && quizManager.hasShownResults) {
+        event.preventDefault();
+        quizManager.shareResults(analyticsManager);
       }
     });
   }
-atures
+
   /**
-   * Prefetch a specific question set  function checkBrowserCompatibility() {
-   */eck for localStorage
+   * Prefetch a specific question set
+   */
   async function prefetchQuestionSet(quizType) {
     if (questionCache.has(quizType)) return;
 
-    try { localStorage.removeItem('test');
+    try {
       const questions = await questionSets[quizType]();
       if (questions?.length > 0) {
-        questionCache.set(quizType, questions);   return false;
-      }   }
-    } catch (error) {    })();
+        questionCache.set(quizType, questions);
+      }
+    } catch (error) {
       logAppError(`Failed to prefetch ${quizType} questions:`, error);
     }
-  } uiManager.showToast('Your browser does not support saving quiz progress.', 'warning');
+  }
 
   /**
    * Prefetch question sets for better performance
-   */    if (!window.JSON || typeof JSON.parse !== 'function') {
+   */
   async function prefetchQuestions() {
-    // Immediately prefetch the default quiz typeis outdated and may not work correctly with this application.',
+    // Immediately prefetch the default quiz type
     prefetchQuestionSet(selectedQuizType);
 
     // Queue other quiz types to be loaded with lower priority
     setTimeout(() => {
       Object.keys(questionSets).forEach((quizType) => {
         if (quizType !== selectedQuizType) {
-          prefetchQuestionSet(quizType);* Initialize keyboard shortcuts
-        }   */
-      });ction initKeyboardShortcuts() {
-    }, 2000); // Wait 2 seconds before loading other setsle most keyboard shortcuts
-  }/ We'll only handle application-specific shortcuts here
+          prefetchQuestionSet(quizType);
+        }
+      });
+    }, 2000); // Wait 2 seconds before loading other sets
+  }
 
   /**
    * Setup navigation between quiz and interview prep
-   */turn;
+   */
   function setupNavigation() {
     const navQuizBtn = document.getElementById('nav-quiz');
-    const navInterviewBtn = document.getElementById('nav-interview');zManager) {
-    const navEbookBtn = document.getElementById('nav-ebook');;
-);
+    const navInterviewBtn = document.getElementById('nav-interview');
+    const navEbookBtn = document.getElementById('nav-ebook');
+
     if (navQuizBtn && navInterviewBtn) {
       navQuizBtn.addEventListener('click', () => {
         if (isLoading) return;
-        router.navigate('quiz'); event.altKey && quizManager && quizManager.hasShownResults) {
+        router.navigate('quiz');
       });
-uizManager.shareResults(analyticsManager);
-      navInterviewBtn.addEventListener('click', () => {}
+
+      navInterviewBtn.addEventListener('click', () => {
         if (isLoading) return;
         router.navigate('interview');
       });
       
-      if (navEbookBtn) {ch a specific question set
+      if (navEbookBtn) {
         navEbookBtn.addEventListener('click', () => {
-          if (isLoading) return;nc function prefetchQuestionSet(quizType) {
-          router.navigate('ebook'); if (questionCache.has(quizType)) return;
+          if (isLoading) return;
+          router.navigate('ebook');
         });
-      }ry {
-    }ets[quizType]();
-  } if (questions?.length > 0) {
- questions);
+      }
+    }
+  }
+
   /**
    * Set up quiz type selection buttons
-   */pe} questions:`, error);
+   */
   function setupQuizTypeButtons() {
-    const quizTypeButtons = document.querySelectorAll('.quiz-type-btn');  }
+    const quizTypeButtons = document.querySelectorAll('.quiz-type-btn');
     quizTypeButtons.forEach((button) => {
       button.addEventListener('click', () => {
-        if (isLoading) return;   * Prefetch question sets for better performance
+        if (isLoading) return;
 
         // Remove active class from all buttons
-        quizTypeButtons.forEach((btn) => btn.classList.remove('active'));    // Immediately prefetch the default quiz type
-Type);
+        quizTypeButtons.forEach((btn) => btn.classList.remove('active'));
+
         // Add active class to clicked button
-        button.classList.add('active');riority
+        button.classList.add('active');
 
         // Update selected quiz type
-        const newQuizType = button.getAttribute('data-type');        if (quizType !== selectedQuizType) {
+        const newQuizType = button.getAttribute('data-type');
         if (newQuizType && questionSets[newQuizType]) {
           selectedQuizType = newQuizType;
           analyticsManager.trackEvent('select_quiz_type', { type: selectedQuizType });
-e loading other sets
+
           // Update route to include the selected quiz type
           if (window.appRouter && window.appRouter.getCurrentRoute().name === 'quiz') {
             window.appRouter.navigate('quiz', { 
-              type: selectedQuizType,   * Setup navigation between quiz and interview prep
+              type: selectedQuizType,
               difficulty: selectedDifficulty
             });
-          }zBtn = document.getElementById('nav-quiz');
+          }
 
-          // Prefetch this question set immediately navEbookBtn = document.getElementById('nav-ebook');
+          // Prefetch this question set immediately
           prefetchQuestionSet(selectedQuizType);
-        } else {(navQuizBtn && navInterviewBtn) {
-          uiManager.showToast('This quiz type is not available yet.', 'warning');   navQuizBtn.addEventListener('click', () => {
-        }        if (isLoading) return;
-      });   router.navigate('quiz');
+        } else {
+          uiManager.showToast('This quiz type is not available yet.', 'warning');
+        }
+      });
     });
   }
-r('click', () => {
+
   /**
    * Set up difficulty selection buttons
    */
   function setupDifficultyButtons() {
-    const difficultyButtons = document.querySelectorAll('.difficulty-btn');      if (navEbookBtn) {
-    difficultyButtons.forEach((button) => {) => {
+    const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+    difficultyButtons.forEach((button) => {
       button.addEventListener('click', () => {
-        if (isLoading) return;          router.navigate('ebook');
+        if (isLoading) return;
 
         // Remove active class from all buttons
-        difficultyButtons.forEach((btn) => btn.classList.remove('active'));    }
+        difficultyButtons.forEach((btn) => btn.classList.remove('active'));
 
         // Add active class to clicked button
         button.classList.add('active');
 
         // Update selected difficulty
-        const newDifficulty = button.getAttribute('data-difficulty'); setupQuizTypeButtons() {
-        if (newDifficulty) {-type-btn');
+        const newDifficulty = button.getAttribute('data-difficulty');
+        if (newDifficulty) {
           selectedDifficulty = newDifficulty;
           analyticsManager.trackEvent('select_difficulty', { level: selectedDifficulty });
           
           // Update route to include the selected difficulty
-          if (window.appRouter && window.appRouter.getCurrentRoute().name === 'quiz') {ve active class from all buttons
-            window.appRouter.navigate('quiz', { zTypeButtons.forEach((btn) => btn.classList.remove('active'));
+          if (window.appRouter && window.appRouter.getCurrentRoute().name === 'quiz') {
+            window.appRouter.navigate('quiz', { 
               type: selectedQuizType,
-              difficulty: selectedDifficulty/ Add active class to clicked button
-            }); button.classList.add('active');
-          }
-        }        // Update selected quiz type
-      });   const newQuizType = button.getAttribute('data-type');
-    });pe && questionSets[newQuizType]) {
-  }     selectedQuizType = newQuizType;
-ckEvent('select_quiz_type', { type: selectedQuizType });
-  /**
-   * Start a new quiz          // Update route to include the selected quiz type
-   */ if (window.appRouter && window.appRouter.getCurrentRoute().name === 'quiz') {
-  async function startQuiz() {outer.navigate('quiz', { 
-    if (isLoading) return;
               difficulty: selectedDifficulty
+            });
+          }
+        }
+      });
+    });
+  }
+
+  /**
+   * Start a new quiz
+   */
+  async function startQuiz() {
+    if (isLoading) return;
+
     try {
       isLoading = true;
       uiManager.showLoadingState(true);
- set immediately
-      // Try to get questions from cache firstSet(selectedQuizType);
+
+      // Try to get questions from cache first
       let allQuestions = questionCache.get(selectedQuizType);
-rning');
+
       // If not in cache, load them
-      if (!allQuestions) {      });
+      if (!allQuestions) {
         if (!questionSets[selectedQuizType]) {
-          throw new Error(`Quiz type ${selectedQuizType} not available`);  }
+          throw new Error(`Quiz type ${selectedQuizType} not available`);
         }
 
         allQuestions = await questionSets[selectedQuizType]();
 
-        // Store in cache for future useion setupDifficultyButtons() {
-        if (allQuestions?.length > 0) {    const difficultyButtons = document.querySelectorAll('.difficulty-btn');
-          questionCache.set(selectedQuizType, allQuestions);=> {
+        // Store in cache for future use
+        if (allQuestions?.length > 0) {
+          questionCache.set(selectedQuizType, allQuestions);
         }
       }
 
-      // Filter questions by difficulty        // Remove active class from all buttons
-      const filteredQuestions = allQuestions.filter(active'));
+      // Filter questions by difficulty
+      const filteredQuestions = allQuestions.filter(
         (q) => q.difficulty === selectedDifficulty || !q.difficulty
       );
-assList.add('active');
+
       if (!filteredQuestions || filteredQuestions.length === 0) {
-        uiManager.showToast(te selected difficulty
-          `No questions available for ${selectedQuizType.toUpperCase()} (${selectedDifficulty}). Try another selection.`, const newDifficulty = button.getAttribute('data-difficulty');
-          'error'        if (newDifficulty) {
+        uiManager.showToast(
+          `No questions available for ${selectedQuizType.toUpperCase()} (${selectedDifficulty}). Try another selection.`,
+          'error'
         );
-        return;t('select_difficulty', { level: selectedDifficulty });
+        return;
       }
-e route to include the selected difficulty
-      // Initialize quiz manager with filtered questionsouter && window.appRouter.getCurrentRoute().name === 'quiz') {
-      quizManager = new QuizManager(er.navigate('quiz', { 
-        filteredQuestions,      type: selectedQuizType,
-        uiManager,              difficulty: selectedDifficulty
+
+      // Initialize quiz manager with filtered questions
+      quizManager = new QuizManager(
+        filteredQuestions,
+        uiManager,
         selectedQuizType,
         selectedDifficulty
       );
@@ -356,292 +397,290 @@ e route to include the selected difficulty
         type: selectedQuizType,
         difficulty: selectedDifficulty,
         questionCount: filteredQuestions.length,
-      });n startQuiz() {
+      });
     } catch (error) {
       logAppError('Error starting quiz:', error);
-      uiManager.showToast('Failed to load questions. Please try again.', 'error');ry {
-    } finally {   isLoading = true;
-      uiManager.showLoadingState(false);      uiManager.showLoadingState(true);
+      uiManager.showToast('Failed to load questions. Please try again.', 'error');
+    } finally {
+      uiManager.showLoadingState(false);
       isLoading = false;
     }
-  } let allQuestions = questionCache.get(selectedQuizType);
+  }
 
-  /**em
+  /**
    * Bind core action buttons (start, restart, change topic, share)
-   */        if (!questionSets[selectedQuizType]) {
-  function bindActionButtons() {e ${selectedQuizType} not available`);
+   */
+  function bindActionButtons() {
     // Start button click handler
     uiManager.bindStartButton(startQuiz);
-        allQuestions = await questionSets[selectedQuizType]();
+
     // Restart button click handler
     uiManager.bindRestartButton(() => {
-      if (isLoading || !quizManager) return;h > 0) {
-zType, allQuestions);
+      if (isLoading || !quizManager) return;
       quizManager.restartQuiz();
       analyticsManager.trackEvent('restart_quiz', {
         type: selectedQuizType,
         difficulty: selectedDifficulty,
-      });estions.filter(
-    });=== selectedDifficulty || !q.difficulty
-      );
+      });
+    });
+
     // Change topic button click handler
-    uiManager.bindChangeTopic(() => {th === 0) {
-      if (isLoading) return;        uiManager.showToast(
-perCase()} (${selectedDifficulty}). Try another selection.`,
+    uiManager.bindChangeTopic(() => {
+      if (isLoading) return;
       uiManager.showStartScreen();
       analyticsManager.trackEvent('change_topic', {});
 
       // If a quiz was in progress, confirm before discarding
       if (quizManager && !quizManager.hasShownResults) {
-        // Using a safer confirmation approach instead of global confirm/ Initialize quiz manager with filtered questions
-        // eslint-disable-next-line no-alert      quizManager = new QuizManager(
+        // Using a safer confirmation approach instead of global confirm
+        // eslint-disable-next-line no-alert
         const userConfirmed = window.confirm('Are you sure you want to leave your current quiz?');
         if (!userConfirmed) return;
       }
 
-      // Clear any existing state;
+      // Clear any existing state
       if (quizManager) {
-        quizManager.stopTimer();      // Start the quiz
+        quizManager.stopTimer();
         quizManager = null;
-      } {
-    });izType,
-electedDifficulty,
-    // Share button click handler,
-    uiManager.bindShareButton(({ native }) => {
-      if (quizManager) {or) {
-        if (native) {, error);
-          // Use the native share functionalityPlease try again.', 'error');
-          quizManager.shareResults(analyticsManager);ally {
-        } else {iManager.showLoadingState(false);
-          // Use clipboard-based sharingsLoading = false;
-          quizManager.shareResults(analyticsManager); }
-        }  }
       }
     });
-  }Bind core action buttons (start, restart, change topic, share)
 
-  /**ns() {
-   * Resume a saved quiz    // Start button click handler
-   */ager.bindStartButton(startQuiz);
+    // Share button click handler
+    uiManager.bindShareButton(({ native }) => {
+      if (quizManager) {
+        if (native) {
+          // Use the native share functionality
+          quizManager.shareResults(analyticsManager);
+        } else {
+          // Use clipboard-based sharing
+          quizManager.shareResults(analyticsManager);
+        }
+      }
+    });
+  }
+
+  /**
+   * Resume a saved quiz
+   */
   async function resumeQuiz(state) {
     if (isLoading) return;
-    uiManager.bindRestartButton(() => {
+
     try {
       isLoading = true;
-      uiManager.showLoadingState(true);      quizManager.restartQuiz();
-t('restart_quiz', {
-      // eslint-disable-next-line no-consolepe: selectedQuizType,
-      console.log('Attempting to resume quiz with state:', state);y: selectedDifficulty,
+      uiManager.showLoadingState(true);
+
+      // eslint-disable-next-line no-console
+      console.log('Attempting to resume quiz with state:', state);
 
       // Validate required state
       if (
-        !state ||ange topic button click handler
+        !state ||
         !state.quizType ||
-        !state.difficulty ||f (isLoading) return;
+        !state.difficulty ||
         !Array.isArray(state.shuffledQuestions)
       ) {
-        throw new Error('Invalid saved state structure');trackEvent('change_topic', {});
+        throw new Error('Invalid saved state structure');
       }
-nfirm before discarding
+
       // Load questions for saved quiz type
-      let allQuestions;        // Using a safer confirmation approach instead of global confirm
+      let allQuestions;
       try {
-        // Try to get from cache first= window.confirm('Are you sure you want to leave your current quiz?');
+        // Try to get from cache first
         allQuestions = questionCache.get(state.quizType);
 
         // If not in cache, load from source
-        if (!allQuestions) {ear any existing state
-          // Check if quiz type is supported      if (quizManager) {
-          if (!questionSets[state.quizType]) {er();
+        if (!allQuestions) {
+          // Check if quiz type is supported
+          if (!questionSets[state.quizType]) {
             throw new Error(`Quiz type ${state.quizType} not supported`);
-          }      }
+          }
 
           // Load questions
           allQuestions = await questionSets[state.quizType]();
-ShareButton(({ native }) => {
+
           // Cache for future use if valid
-          if (Array.isArray(allQuestions) && allQuestions.length > 0) {(native) {
-            questionCache.set(state.quizType, allQuestions); // Use the native share functionality
-          } else {hareResults(analyticsManager);
+          if (Array.isArray(allQuestions) && allQuestions.length > 0) {
+            questionCache.set(state.quizType, allQuestions);
+          } else {
             throw new Error('Failed to load questions');
           }
-        }   quizManager.shareResults(analyticsManager);
-      } catch (error) {        }
+        }
+      } catch (error) {
         logAppError('Error loading questions:', error);
-        throw new Error(`Failed to load questions for ${state.quizType}: ${error.message}`);    });
+        throw new Error(`Failed to load questions for ${state.quizType}: ${error.message}`);
       }
 
       // We don't need to filter by difficulty here since we're using the saved questions
-   * Resume a saved quiz
+
       // Update stored selections
       selectedQuizType = state.quizType;
       selectedDifficulty = state.difficulty;
 
       // Create new QuizManager
       quizManager = new QuizManager(
-        allQuestions, // Pass the full question set; we'll use saved shuffled questionsManager.showLoadingState(true);
+        allQuestions, // Pass the full question set; we'll use saved shuffled questions
         uiManager,
         state.quizType,
-        state.difficultyle.log('Attempting to resume quiz with state:', state);
+        state.difficulty
       );
 
       // Don't call these methods if they don't exist
-      try {state ||
-        // These are optional UI updates - don't block resume if they fail        !state.quizType ||
+      try {
+        // These are optional UI updates - don't block resume if they fail
         if (typeof uiManager.updateQuizTypeSelection === 'function') {
           uiManager.updateQuizTypeSelection(state.quizType);
         }
-('Invalid saved state structure');
+
         if (typeof uiManager.updateDifficultySelection === 'function') {
           uiManager.updateDifficultySelection(state.difficulty);
-        }      // Load questions for saved quiz type
+        }
       } catch (error) {
         logAppError('Non-critical UI update error:', error);
-      }        // Try to get from cache first
-stionCache.get(state.quizType);
+      }
+
       // Load the saved state
       const resumeSuccess = quizManager.loadSavedState(state);
 
-      if (resumeSuccess) {ted
+      if (resumeSuccess) {
         if (analyticsManager) {
-          analyticsManager.trackEvent('resume_quiz', {t supported`);
+          analyticsManager.trackEvent('resume_quiz', {
             type: state.quizType,
             difficulty: state.difficulty,
-            currentQuestion: state.currentQuestion,          // Load questions
-            totalQuestions: state.shuffledQuestions.length,pe]();
+            currentQuestion: state.currentQuestion,
+            totalQuestions: state.shuffledQuestions.length,
           });
-        } // Cache for future use if valid
-Array.isArray(allQuestions) && allQuestions.length > 0) {
-        if (typeof uiManager.showToast === 'function') {tions);
-          uiManager.showToast('Quiz resumed successfully', 'success');   } else {
-        } Error('Failed to load questions');
+        }
+
+        if (typeof uiManager.showToast === 'function') {
+          uiManager.showToast('Quiz resumed successfully', 'success');
+        }
       } else {
-        throw new Error('Failed to load quiz state');        }
+        throw new Error('Failed to load quiz state');
       }
-    } catch (error) {;
-      logAppError('Error resuming quiz:', error);ssage}`);
+    } catch (error) {
+      logAppError('Error resuming quiz:', error);
 
       // Show error message
-      if (typeof uiManager.showToast === 'function') {ty here since we're using the saved questions
+      if (typeof uiManager.showToast === 'function') {
         uiManager.showToast('Could not resume quiz. Starting a new one.', 'error');
-      } else {/ Update stored selections
-        // Use a safer UI notification method when available, fallback to alert      selectedQuizType = state.quizType;
-        // eslint-disable-next-line no-alertdifficulty;
+      } else {
+        // Use a safer UI notification method when available, fallback to alert
+        // eslint-disable-next-line no-alert
         alert('Could not resume quiz. Starting a new one.');
       }
-er = new QuizManager(
-      // Start a new quiz insteadtions, // Pass the full question set; we'll use saved shuffled questions
+
+      // Start a new quiz instead
       setTimeout(() => {
         startQuiz(selectedQuizType, selectedDifficulty);
-      }, 1000); state.difficulty
+      }, 1000);
     } finally {
       if (typeof uiManager.showLoadingState === 'function') {
-        uiManager.showLoadingState(false);   // Don't call these methods if they don't exist
-      }      try {
-      isLoading = false;   // These are optional UI updates - don't block resume if they fail
-    }dateQuizTypeSelection === 'function') {
-  }     uiManager.updateQuizTypeSelection(state.quizType);
+        uiManager.showLoadingState(false);
+      }
+      isLoading = false;
+    }
+  }
 
   /**
-   * Check for saved quiz state'function') {
-   */icultySelection(state.difficulty);
-  async function checkForSavedState() {        }
-    try {rror) {
-      const savedState = localStorage.getItem('quizState');AppError('Non-critical UI update error:', error);
+   * Check for saved quiz state
+   */
+  async function checkForSavedState() {
+    try {
+      const savedState = localStorage.getItem('quizState');
       if (!savedState) return;
 
       let state;
-      try {avedState(state);
+      try {
         state = JSON.parse(savedState);
-      } catch (e) {f (resumeSuccess) {
-        logAppError('Invalid JSON in saved state', e);        if (analyticsManager) {
-        localStorage.removeItem('quizState');vent('resume_quiz', {
-        return;
-      }
-rentQuestion: state.currentQuestion,
-      // Validate basic structure     totalQuestions: state.shuffledQuestions.length,
-      if (!state || !state.quizType || state.currentQuestion === undefined) {          });
+      } catch (e) {
+        logAppError('Invalid JSON in saved state', e);
         localStorage.removeItem('quizState');
         return;
-      }showToast === 'function') {
-y', 'success');
+      }
+
+      // Validate basic structure
+      if (!state || !state.quizType || state.currentQuestion === undefined) {
+        localStorage.removeItem('quizState');
+        return;
+      }
+
       // Check if the state is too old (more than 24 hours)
       const stateTimestamp = state.timestamp || 0;
-      const now = Date.now(); throw new Error('Failed to load quiz state');
-      if (now - stateTimestamp > 24 * 60 * 60 * 1000) {      }
+      const now = Date.now();
+      if (now - stateTimestamp > 24 * 60 * 60 * 1000) {
         localStorage.removeItem('quizState');
-        return;ppError('Error resuming quiz:', error);
+        return;
       }
-ge
-      // Show resume prompt only if we have a valid in-progress quizshowToast === 'function') {
-      if (z. Starting a new one.', 'error');
+
+      // Show resume prompt only if we have a valid in-progress quiz
+      if (
         state.currentQuestion >= 0 &&
-        state.quizType &&/ Use a safer UI notification method when available, fallback to alert
-        state.difficulty && no-alert
-        Array.isArray(state.shuffledQuestions) &&iz. Starting a new one.');
+        state.quizType &&
+        state.difficulty &&
+        Array.isArray(state.shuffledQuestions) &&
         state.shuffledQuestions.length > 0
       ) {
         uiManager.showResumePrompt(
-          () => resumeQuiz(state),meout(() => {
-          () => {artQuiz(selectedQuizType, selectedDifficulty);
-            localStorage.removeItem('quizState');, 1000);
+          () => resumeQuiz(state),
+          () => {
+            localStorage.removeItem('quizState');
             analyticsManager.trackEvent('decline_resume', {});
-          }ction') {
+          }
         );
-      } }
-    } catch (e) {   isLoading = false;
-      logAppError('Error checking saved state:', e);    }
+      }
+    } catch (e) {
+      logAppError('Error checking saved state:', e);
       localStorage.removeItem('quizState');
     }
   }
-tate
+
   /**
-   * Initialize UI components and event bindingsState() {
+   * Initialize UI components and event bindings
    */
-  function initializeUI() {getItem('quizState');
-    // Set up pause/resume functionalityif (!savedState) return;
+  function initializeUI() {
+    // Set up pause/resume functionality
     uiManager.bindPauseButton(
       () => quizManager?.togglePause(),
       () => quizManager?.togglePause()
-    );        state = JSON.parse(savedState);
+    );
 
-    // Set up quiz type selectionJSON in saved state', e);
-    setupQuizTypeButtons();        localStorage.removeItem('quizState');
+    // Set up quiz type selection
+    setupQuizTypeButtons();
 
     // Set up difficulty selection
     setupDifficultyButtons();
 
-    // Bind core action buttonstate.quizType || state.currentQuestion === undefined) {
-    bindActionButtons();        localStorage.removeItem('quizState');
+    // Bind core action buttons
+    bindActionButtons();
 
     // Set up navigation between quiz and interview prep
     setupNavigation();
- old (more than 24 hours)
-    // Add home logo/brand text navigationmp = state.timestamp || 0;
-    setupHomeLogo();  const now = Date.now();
-0 * 60 * 1000) {
+
+    // Add home logo/brand text navigation
+    setupHomeLogo();
+
     // Initialize eBook components
     ebookManager.init();
     
     // Register ebook navigation button
-    const ebookNavBtn = document.getElementById('nav-ebook');ve a valid in-progress quiz
+    const ebookNavBtn = document.getElementById('nav-ebook');
     if (ebookNavBtn) {
-      ebookNavBtn.addEventListener('click', () => {te.currentQuestion >= 0 &&
-        document.querySelectorAll('.nav-btn').forEach(btn => {state.quizType &&
+      ebookNavBtn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-btn').forEach(btn => {
           btn.classList.remove('active');
           btn.setAttribute('aria-selected', 'false');
-        });state.shuffledQuestions.length > 0
+        });
         
         ebookNavBtn.classList.add('active');
-        ebookNavBtn.setAttribute('aria-selected', 'true');) => resumeQuiz(state),
-          () => {
+        ebookNavBtn.setAttribute('aria-selected', 'true');
+        
         document.querySelectorAll('.main-container').forEach(container => {
-          container.classList.add('hidden');trackEvent('decline_resume', {});
+          container.classList.add('hidden');
         });
-        ;
+        
         const ebookContainer = document.getElementById('ebook-container');
-        if (ebookContainer) { catch (e) {
-          ebookContainer.classList.remove('hidden');  logAppError('Error checking saved state:', e);
+        if (ebookContainer) {
+          ebookContainer.classList.remove('hidden');
         }
       });
     }
@@ -651,113 +690,113 @@ tate
     const navInterviewBtn = document.getElementById('nav-interview');
     
     if (navQuizBtn) {
-      const originalClickHandler = navQuizBtn.onclick;nager.bindPauseButton(
-      navQuizBtn.onclick = function(e) { () => quizManager?.togglePause(),
-        if (originalClickHandler) originalClickHandler.call(this, e);  () => quizManager?.togglePause()
+      const originalClickHandler = navQuizBtn.onclick;
+      navQuizBtn.onclick = function(e) {
+        if (originalClickHandler) originalClickHandler.call(this, e);
         document.getElementById('ebook-container')?.classList.add('hidden');
       };
     }
     
     if (navInterviewBtn) {
-      const originalClickHandler = navInterviewBtn.onclick;et up difficulty selection
-      navInterviewBtn.onclick = function(e) {etupDifficultyButtons();
+      const originalClickHandler = navInterviewBtn.onclick;
+      navInterviewBtn.onclick = function(e) {
         if (originalClickHandler) originalClickHandler.call(this, e);
-        document.getElementById('ebook-container')?.classList.add('hidden');    // Bind core action buttons
-      };indActionButtons();
+        document.getElementById('ebook-container')?.classList.add('hidden');
+      };
     }
-  }/ Set up navigation between quiz and interview prep
+  }
 
   /**
-   * Set up the home logo/brand text to redirect to home page text navigation
+   * Set up the home logo/brand text to redirect to home page
    */
   function setupHomeLogo() {
     // Get all elements that should navigate to home page
     const homeElements = [
       document.querySelector('.brand-logo'), // Logo image
-      document.querySelector('.brand-text'), // Brand text    // Register ebook navigation button
+      document.querySelector('.brand-text'), // Brand text
       document.querySelector('header .logo'), // Header logo container
       document.querySelector('.app-name'), // App name text
-    ];dEventListener('click', () => {
+    ];
 
     // Add click handler to all home navigation elements (if they exist)
-    homeElements.forEach(element => {e');
+    homeElements.forEach(element => {
       if (element) {
         element.style.cursor = 'pointer'; // Make it clear it's clickable
         element.setAttribute('title', 'Go to home page'); // Accessibility hint
-        element.addEventListener('click', () => {kNavBtn.setAttribute('aria-selected', 'true');
+        element.addEventListener('click', () => {
           // Navigate to home (which is the quiz route by default)
-          if (window.appRouter) {ontainer => {
+          if (window.appRouter) {
             window.appRouter.navigate('quiz');
             
             // If we were in a quiz and want to go back to selection screen
-            if (quizManager && !quizManager.hasShownResults) {ment.getElementById('ebook-container');
+            if (quizManager && !quizManager.hasShownResults) {
               // Ask for confirmation to leave current quiz
-              if (confirm('Are you sure you want to leave your current quiz?')) {Container.classList.remove('hidden');
+              if (confirm('Are you sure you want to leave your current quiz?')) {
                 quizManager.stopTimer();
                 quizManager = null;
                 uiManager.showStartScreen();
               }
-            } else {e the existing navigation handlers for quiz and interview to also hide the eBook container
-              // If no active quiz, just show the start screen;
-              uiManager.showStartScreen();ew');
+            } else {
+              // If no active quiz, just show the start screen
+              uiManager.showStartScreen();
             }
-            QuizBtn) {
-            analyticsManager.trackEvent('navigate_home', { originalClickHandler = navQuizBtn.onclick;
-              from_page: window.appRouter.getCurrentRoute().nameavQuizBtn.onclick = function(e) {
-            }); if (originalClickHandler) originalClickHandler.call(this, e);
-          }     document.getElementById('ebook-container')?.classList.add('hidden');
-        });      };
+
+            analyticsManager.trackEvent('navigate_home', {
+              from_page: window.appRouter.getCurrentRoute().name
+            });
+          }
+        });
       }
     });
-  }    if (navInterviewBtn) {
-ndler = navInterviewBtn.onclick;
-  // Check for browser compatibilitywBtn.onclick = function(e) {
-  checkBrowserCompatibility();        if (originalClickHandler) originalClickHandler.call(this, e);
-classList.add('hidden');
+  }
+
+  // Check for browser compatibility
+  checkBrowserCompatibility();
+
   // Initialize UI elements
-  initializeUI();    }
+  initializeUI();
 
   // Try to prefetch question sets in the background
-  prefetchQuestions();  /**
- home page
-  // Check for saved state immediately
-  checkForSavedState();  function setupHomeLogo() {
-d navigate to home page
-  // Register service worker for offline capability
-  registerServiceWorker();      document.querySelector('.brand-logo'), // Logo image
+  prefetchQuestions();
 
-  // Initialize keyboard shortcutsheader .logo'), // Header logo container
-  initKeyboardShortcuts();    document.querySelector('.app-name'), // App name text
+  // Check for saved state immediately
+  checkForSavedState();
+
+  // Register service worker for offline capability
+  registerServiceWorker();
+
+  // Initialize keyboard shortcuts
+  initKeyboardShortcuts();
 
   // Initialize router (add this before the existing URL parameter checks)
-  const router = new Router();e navigation elements (if they exist)
-  lement => {
+  const router = new Router();
+
   // Register routes
   router
-    .register('quiz', (params) => {ty hint
+    .register('quiz', (params) => {
       // Show quiz section
       const quizContainer = document.getElementById('quiz-container');
       const interviewContainer = document.getElementById('interview-container');
-      const ebookContainer = document.getElementById('ebook-container');      window.appRouter.navigate('quiz');
+      const ebookContainer = document.getElementById('ebook-container');
       const navQuizBtn = document.getElementById('nav-quiz');
-      const navInterviewBtn = document.getElementById('nav-interview');o back to selection screen
+      const navInterviewBtn = document.getElementById('nav-interview');
       const navEbookBtn = document.getElementById('nav-ebook');
-              // Ask for confirmation to leave current quiz
-      quizContainer.classList.remove('hidden');ou want to leave your current quiz?')) {
+      
+      quizContainer.classList.remove('hidden');
       interviewContainer.classList.add('hidden');
       if (ebookContainer) ebookContainer.classList.add('hidden');
-                uiManager.showStartScreen();
+      
       navQuizBtn.classList.add('active');
       navInterviewBtn.classList.remove('active');
       if (navEbookBtn) navEbookBtn.classList.remove('active');
-      r.showStartScreen();
+      
       // Handle quiz parameters (type, difficulty)
       if (params.type && questionSets[params.type]) {
-        const typeBtn = document.querySelector(`.quiz-type-btn[data-type="${params.type}"]`);navigate_home', {
-        if (typeBtn) {rentRoute().name
-          document.querySelectorAll('.quiz-type-btn').forEach(btn => btn.classList.remove('active'));   });
-          typeBtn.classList.add('active');   }
-          selectedQuizType = params.type;  });
+        const typeBtn = document.querySelector(`.quiz-type-btn[data-type="${params.type}"]`);
+        if (typeBtn) {
+          document.querySelectorAll('.quiz-type-btn').forEach(btn => btn.classList.remove('active'));
+          typeBtn.classList.add('active');
+          selectedQuizType = params.type;
           prefetchQuestionSet(selectedQuizType);
         }
       }
@@ -765,92 +804,37 @@ d navigate to home page
       if (params.difficulty) {
         const difficultyBtn = document.querySelector(`.difficulty-btn[data-difficulty="${params.difficulty}"]`);
         if (difficultyBtn) {
-          document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));itialize UI elements
-          difficultyBtn.classList.add('active');ializeUI();
+          document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+          difficultyBtn.classList.add('active');
           selectedDifficulty = params.difficulty;
-        }tion sets in the background
+        }
       }
       
-      analyticsManager.trackEvent('view_quiz_section', {k for saved state immediately
-        from_route: true,kForSavedState();
+      analyticsManager.trackEvent('view_quiz_section', {
+        from_route: true,
         type: params.type || selectedQuizType,
-        difficulty: params.difficulty || selectedDifficultyr offline capability
+        difficulty: params.difficulty || selectedDifficulty
       });
     })
     .register('interview', (params) => {
       // Show interview section
       const quizContainer = document.getElementById('quiz-container');
-      const interviewContainer = document.getElementById('interview-container');ter checks)
-      const ebookContainer = document.getElementById('ebook-container');t router = new Router();
+      const interviewContainer = document.getElementById('interview-container');
+      const ebookContainer = document.getElementById('ebook-container');
       const navQuizBtn = document.getElementById('nav-quiz');
       const navInterviewBtn = document.getElementById('nav-interview');
       const navEbookBtn = document.getElementById('nav-ebook');
-      egister('quiz', (params) => {
-      quizContainer.classList.add('hidden');
-      interviewContainer.classList.remove('hidden');tById('quiz-container');
-      if (ebookContainer) ebookContainer.classList.add('hidden');rview-container');
-      const ebookContainer = document.getElementById('ebook-container');
-      navQuizBtn.classList.remove('active');
-      navInterviewBtn.classList.add('active');ementById('nav-interview');
-      if (navEbookBtn) navEbookBtn.classList.remove('active');nt.getElementById('nav-ebook');
       
-      // Initialize the interview content if it hasn't been loaded yetuizContainer.classList.remove('hidden');
-      if (!interviewManager.isInitialized) {interviewContainer.classList.add('hidden');
-        interviewManager.init();lassList.add('hidden');
-        interviewManager.isInitialized = true;
-      }
-      avInterviewBtn.classList.remove('active');
-      // Handle specific topic if providedif (navEbookBtn) navEbookBtn.classList.remove('active');
-      if (params.topic) {
-        interviewManager.selectTopic(params.topic);meters (type, difficulty)
-      }ts[params.type]) {
-      onst typeBtn = document.querySelector(`.quiz-type-btn[data-type="${params.type}"]`);
-      analyticsManager.trackEvent('view_interview_section', {  if (typeBtn) {
-        from_route: true,'.quiz-type-btn').forEach(btn => btn.classList.remove('active'));
-        topic: params.topic || null);
-      });
-    })
-    .register('ebook', (params) => {
-      // Show ebook section if it exists
-      const quizContainer = document.getElementById('quiz-container');
-      const interviewContainer = document.getElementById('interview-container');
-      const ebookContainer = document.getElementById('ebook-container');  const difficultyBtn = document.querySelector(`.difficulty-btn[data-difficulty="${params.difficulty}"]`);
-      const navQuizBtn = document.getElementById('nav-quiz');
-      const navInterviewBtn = document.getElementById('nav-interview');Each(btn => btn.classList.remove('active'));
-      const navEbookBtn = document.getElementById('nav-ebook');t.add('active');
-      tedDifficulty = params.difficulty;
-      if (!ebookContainer || !navEbookBtn) { }
-        // Fallback to quiz section if ebook doesn't exist}
-        router.navigate('quiz');
-        return;ion', {
-      }
-        type: params.type || selectedQuizType,
-      quizContainer.classList.add('hidden');ectedDifficulty
-      interviewContainer.classList.add('hidden');
-      ebookContainer.classList.remove('hidden');
-      egister('interview', (params) => {
+      quizContainer.classList.add('hidden');
+      interviewContainer.classList.remove('hidden');
+      if (ebookContainer) ebookContainer.classList.add('hidden');
+      
       navQuizBtn.classList.remove('active');
-      navInterviewBtn.classList.remove('active');r = document.getElementById('quiz-container');
-      navEbookBtn.classList.add('active');etElementById('interview-container');
-      onst ebookContainer = document.getElementById('ebook-container');
-      // Initialize and load specific book if providedconst navQuizBtn = document.getElementById('nav-quiz');
-      if (params.book) {v-interview');
-        ebookManager.openBook(params.book); document.getElementById('nav-ebook');
-      }
-      zContainer.classList.add('hidden');
-      analyticsManager.trackEvent('view_ebook_section', {interviewContainer.classList.remove('hidden');
-        from_route: true,r) ebookContainer.classList.add('hidden');
-        book: params.book || null
-      });    navQuizBtn.classList.remove('active');
-    })
-    .setDefault('quiz')ookBtn.classList.remove('active');
-    .init();   
-        // Initialize the interview content if it hasn't been loaded yet
-
-
-
-
-});  window.appRouter = router;  // Make router available globally to other modules      if (!interviewManager.isInitialized) {
+      navInterviewBtn.classList.add('active');
+      if (navEbookBtn) navEbookBtn.classList.remove('active');
+      
+      // Initialize the interview content if it hasn't been loaded yet
+      if (!interviewManager.isInitialized) {
         interviewManager.init();
         interviewManager.isInitialized = true;
       }
