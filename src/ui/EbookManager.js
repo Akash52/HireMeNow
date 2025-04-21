@@ -40,6 +40,9 @@ export class EbookManager {
     this.bindEvents();
     this.ebookReader.init();
     
+    // Initialize animation manager
+    this.initAnimations();
+    
     // Initialize the reading goals if they don't exist
     if (!this.readingStats.goals) {
       this.readingStats.goals = {
@@ -56,6 +59,32 @@ export class EbookManager {
     
     // Update UI with reading stats
     this.updateReadingStatsUI();
+  }
+
+  /**
+   * Initialize animations for the eBook UI
+   */
+  initAnimations() {
+    import('../ui/AnimationManager.js').then(module => {
+      const AnimationManager = module.AnimationManager;
+      this.animationManager = new AnimationManager();
+      this.animationManager.init();
+      
+      // Apply fluid background to the hero section
+      const heroSection = document.querySelector('.ebook-hero');
+      if (heroSection) {
+        this.animationManager.createFluidBackground(heroSection);
+      }
+      
+      // Apply typewriter effect to the hero title
+      const heroTitle = document.querySelector('.ebook-hero-title');
+      if (heroTitle) {
+        heroTitle.classList.add('typewriter');
+        this.animationManager.setupTypewriterEffect();
+      }
+    }).catch(err => {
+      console.error('Failed to load animation manager:', err);
+    });
   }
 
   /**
@@ -88,43 +117,85 @@ export class EbookManager {
     const libraryContainer = document.getElementById('ebook-library');
     if (!libraryContainer) return;
     
-    let html = '';
+    // Clear any existing content
+    libraryContainer.innerHTML = '';
     
-    this.catalog.forEach(book => {
+    if (!this.catalog.length) {
+      libraryContainer.innerHTML = '<p class="col-span-full text-gray-600">No books available.</p>';
+      return;
+    }
+    
+    // Add book cards with enhanced Vite-style design
+    const cardElements = [];
+    
+    this.catalog.forEach((book, index) => {
       const progress = this.getUserProgressForBook(book.id);
-      const progressPercent = progress ? Math.round(progress.percent) : 0;
+      const progressPercent = progress ? progress.percent : 0;
       
-      html += `
-        <div class="ebook-card p-4 bg-white rounded-xl shadow-md border border-gray-100 transition-all hover:shadow-lg">
-          <div class="aspect-w-2 aspect-h-3 mb-3 bg-gray-100 rounded overflow-hidden">
-            <img 
-              src="${book.cover || 'https://i.ibb.co/wNWP732H/default-book-cover.jpg'}" 
-              alt="Cover of ${book.title}"
-              class="object-cover w-full h-full"
-              onerror="this.src='https://i.ibb.co/wNWP732H/default-book-cover.jpg'"
-            />
-          </div>
-          <h3 class="font-bold text-indigo-900 mb-1">${book.title}</h3>
-          <p class="text-xs text-gray-600 mb-2">Author: ${book.author}</p>
-          <div class="mb-3">
-            <div class="w-full bg-gray-200 rounded-full h-1.5">
-              <div class="bg-indigo-600 h-1.5 rounded-full" style="width: ${progressPercent}%"></div>
+      const bookCard = document.createElement('div');
+      bookCard.className = 'ebook-library-card spotlight-card vite-section';
+      bookCard.style.transitionDelay = `${0.1 + (index * 0.05)}s`;
+      
+      bookCard.innerHTML = `
+        <div class="ebook-card h-full flex flex-col">
+          <div class="overflow-hidden h-40 bg-gradient-to-br from-indigo-100 to-purple-100 relative">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <span class="text-5xl font-bold text-indigo-600/20">${book.title.charAt(0)}</span>
             </div>
-            <p class="text-xs text-gray-500 mt-1">${progressPercent}% completed</p>
+            ${book.cover ? `<img src="${book.cover}" alt="${book.title}" class="w-full h-full object-cover">` : ''}
+            <div class="absolute top-2 right-2 text-xs px-2 py-1 bg-white/80 backdrop-blur-sm rounded-full text-indigo-600 font-medium">
+              ${book.chapters} chapters
+            </div>
           </div>
-          <button 
-            class="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium read-book-btn"
-            data-book-id="${book.id}"
-          >
+          
+          <div class="p-4 flex-1 flex flex-col">
+            <h3 class="font-bold text-gray-800 mb-1">${book.title}</h3>
+            <p class="text-sm text-gray-600 mb-3 flex-1">${book.description.substring(0, 80)}${book.description.length > 80 ? '...' : ''}</p>
+            
+            <div class="mt-auto">
+              <div class="flex justify-between text-xs text-gray-500 mb-2">
+                <span>${book.author}</span>
+                <span>${progressPercent > 0 ? `${progressPercent}% complete` : 'Not started'}</span>
+              </div>
+              
+              <div class="reading-progress-bar mb-3 ${progressPercent > 0 ? 'progress-pulse' : ''}">
+                <div class="reading-progress-value" style="width: ${progressPercent}%"></div>
+              </div>
+              
+              <button class="read-book-btn w-full py-2 px-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-sm font-medium transition-colors" data-book-id="${book.id}">
+                ${progressPercent > 0 ? 'Continue Reading' : 'Start Reading'}
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="ebook-card-overlay">
+          <button class="read-book-btn py-2 px-6 bg-white text-indigo-600 rounded-lg font-medium hover:bg-indigo-50 transition-colors" data-book-id="${book.id}">
             ${progressPercent > 0 ? 'Continue Reading' : 'Start Reading'}
           </button>
         </div>
       `;
+      
+      libraryContainer.appendChild(bookCard);
+      cardElements.push(bookCard);
     });
     
-    libraryContainer.innerHTML = html;
+    // Make sure the cards are visible immediately
+    cardElements.forEach(card => {
+      card.classList.add('loaded');
+    });
+    
+    // Then observe for animations if AnimationManager is available
+    if (this.animationManager) {
+      cardElements.forEach(card => {
+        this.animationManager.observeElement(card);
+      });
+    }
+    
+    // Update reading stats UI
+    this.updateReadingStatsUI();
   }
-  
+
   /**
    * Get user progress for a specific book
    * @param {string} bookId - ID of the book
@@ -204,32 +275,58 @@ export class EbookManager {
     // Show loading indicator
     this.uiManager.showToast('Loading ebook...', 'info');
     
-    // Load the book
-    const success = await this.ebookReader.loadBook(bookId);
-    
-    if (success) {
-      // Make sure eBook container is visible by clicking nav button
-      const ebookNavBtn = document.getElementById('nav-ebook');
-      if (ebookNavBtn) {
-        ebookNavBtn.click();
-      }
+    try {
+      // Load the book
+      const success = await this.ebookReader.loadBook(bookId);
+      
+      if (success) {
+        // Make sure eBook container is visible by clicking nav button
+        const ebookNavBtn = document.getElementById('nav-ebook');
+        if (ebookNavBtn) {
+          ebookNavBtn.click();
+        }
 
-      // Switch to reader tab view
-      const readerTab = document.getElementById('ebook-tab');
-      if (readerTab) {
-        readerTab.click();
+        // Switch to reader tab view
+        const readerTab = document.getElementById('ebook-tab');
+        if (readerTab) {
+          readerTab.click();
+        }
+        
+        // Restore last position if available
+        const progress = this.getUserProgressForBook(bookId);
+        if (progress && progress.lastSection) {
+          setTimeout(() => {
+            this.ebookReader.navigateToSection(progress.lastSection);
+          }, 500);
+        }
+        
+        // Update progress periodically
+        this.startProgressTracking();
+      } else {
+        throw new Error('Failed to load book');
       }
+    } catch (error) {
+      console.error('Error opening book:', error);
+      this.notificationManager.showToast('Failed to open book. Please try again.', 'error');
       
-      // Restore last position if available
-      const progress = this.getUserProgressForBook(bookId);
-      if (progress && progress.lastSection) {
-        setTimeout(() => {
-          this.ebookReader.navigateToSection(progress.lastSection);
-        }, 500);
+      // Try with fallback content if available
+      try {
+        if (this.ebookReader.getFallbackBookContent) {
+          const success = await this.ebookReader.loadBook(bookId, true);
+          if (success) {
+            // Continue with book opening as in the success case above
+            const ebookNavBtn = document.getElementById('nav-ebook');
+            if (ebookNavBtn) ebookNavBtn.click();
+            
+            const readerTab = document.getElementById('ebook-tab');
+            if (readerTab) readerTab.click();
+            
+            this.startProgressTracking();
+          }
+        }
+      } catch (fallbackError) {
+        console.error('Fallback book loading also failed:', fallbackError);
       }
-      
-      // Update progress periodically
-      this.startProgressTracking();
     }
   }
   
@@ -841,22 +938,22 @@ export class EbookManager {
    * @param {Object} achievement - The achievement to display
    */
   showAchievementNotification(achievement) {
-    // Create achievement modal
+    // Create achievement modal with bounce-in animation
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50';
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
     
-    // Create achievement content
+    // Create achievement content with vite-style animation
     const content = document.createElement('div');
     content.className = 'bg-gradient-to-br from-indigo-100 to-white p-8 rounded-2xl max-w-sm w-full shadow-2xl animate-bounce-in text-center';
     content.innerHTML = `
-      <div class="achievement-icon text-5xl mb-4">${achievement.icon}</div>
-      <h3 class="text-2xl font-bold text-indigo-900 mb-2">Achievement Unlocked!</h3>
+      <div class="achievement-icon text-5xl mb-4 animate-pulse-slow">${achievement.icon}</div>
+      <h3 class="text-2xl font-bold gradient-text mb-2">Achievement Unlocked!</h3>
       <h4 class="text-xl font-semibold text-indigo-700 mb-4">${achievement.title}</h4>
       <p class="mb-3 text-gray-700">${achievement.description}</p>
       ${achievement.reward ? `<p class="font-semibold text-green-700 mb-4">Reward: ${achievement.reward}</p>` : ''}
-      <button class="close-modal bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+      <button class="close-modal bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors mt-2">
         Continue Reading
       </button>
     `;
@@ -865,7 +962,10 @@ export class EbookManager {
     
     // Add event listener to close button
     content.querySelector('.close-modal').addEventListener('click', () => {
-      document.body.removeChild(modal);
+      modal.classList.add('animate-fade-out');
+      setTimeout(() => {
+        document.body.removeChild(modal);
+      }, 300);
     });
     
     // Add to page
@@ -948,262 +1048,106 @@ export class EbookManager {
     const statsContainer = document.getElementById('reading-stats-container');
     if (!statsContainer) return;
     
-    const today = new Date().toISOString().split('T')[0];
-    const todaysReading = this.readingStats.calendar[today] || 0;
-    const goalProgress = Math.min(100, Math.round((todaysReading / this.readingStats.goals.dailyMinutes) * 100));
+    // Create a more engaging stats display with animations
+    let totalTimeRead = this.readingStats.totalTimeRead || 0;
+    const booksStarted = this.userProgress.length;
+    const booksCompleted = this.userProgress.filter(p => p.percent >= 100).length;
+    
+    // Format reading time
+    const hours = Math.floor(totalTimeRead / 60);
+    const minutes = totalTimeRead % 60;
+    const timeString = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+    
+    // Get a random motivational quote
+    const randomQuote = this.quotes[Math.floor(Math.random() * this.quotes.length)];
     
     statsContainer.innerHTML = `
-      <div class="stats-card p-4 bg-white rounded-xl shadow-md border border-gray-100 mb-4">
-        <h3 class="font-bold text-indigo-900 mb-3">Reading Stats</h3>
+      <div class="mb-10 vite-section">
+        <h3 class="text-xl font-bold text-indigo-900 mb-4">Reading Insights</h3>
         
-        <div class="mb-3">
-          <div class="flex justify-between text-sm mb-1">
-            <span>Daily Goal (${this.readingStats.goals.dailyMinutes} min)</span>
-            <span>${todaysReading} min</span>
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-2">
-            <div class="bg-indigo-600 h-2 rounded-full" style="width: ${goalProgress}%"></div>
-          </div>
-        </div>
-        
-        <div class="grid grid-cols-3 gap-2 mb-3">
-          <div class="text-center p-2 bg-indigo-50 rounded">
-            <div class="text-2xl font-bold text-indigo-700">${this.readingStats.streaks.current}</div>
-            <div class="text-xs text-gray-600">Day Streak</div>
-          </div>
-          <div class="text-center p-2 bg-indigo-50 rounded">
-            <div class="text-2xl font-bold text-indigo-700">${Math.round(this.readingStats.totalTimeRead / 60)}</div>
-            <div class="text-xs text-gray-600">Hours Read</div>
-          </div>
-          <div class="text-center p-2 bg-indigo-50 rounded">
-            <div class="text-2xl font-bold text-indigo-700">${this.readingStats.booksCompleted}</div>
-            <div class="text-xs text-gray-600">Completed</div>
-          </div>
-        </div>
-        
-        <button id="view-reading-insights" class="w-full py-2 bg-indigo-100 text-indigo-800 rounded hover:bg-indigo-200 transition-colors text-sm font-medium">
-          View Insights
-        </button>
-      </div>
-      
-      <div class="stats-card p-4 bg-white rounded-xl shadow-md border border-gray-100">
-        <h3 class="font-bold text-indigo-900 mb-2">Reading Calendar</h3>
-        <div id="reading-calendar" class="calendar-heatmap text-center text-xs"></div>
-      </div>
-    `;
-    
-    // Initialize calendar heatmap
-    this.renderReadingCalendar();
-    
-    // Add event listener for insights button
-    document.getElementById('view-reading-insights').addEventListener('click', () => {
-      this.showReadingInsights();
-    });
-  }
-  
-  /**
-   * Render the reading calendar heatmap
-   */
-  renderReadingCalendar() {
-    const calendarContainer = document.getElementById('reading-calendar');
-    if (!calendarContainer) return;
-    
-    // Get data for the last 30 days
-    const today = new Date();
-    const calendar = this.readingStats.calendar;
-    let html = '<div class="grid grid-cols-7 gap-1">';
-    
-    // Add day headers
-    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-    for (let i = 0; i < 7; i++) {
-      html += `<div class="text-gray-500">${days[i]}</div>`;
-    }
-    
-    // Get the date 30 days ago
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 30);
-    
-    // Fill in blank days at the beginning to align with weekdays
-    const startDay = startDate.getDay();
-    for (let i = 0; i < startDay; i++) {
-      html += '<div class="h-6"></div>';
-    }
-    
-    // Add days with heat coloring
-    for (let i = 0; i < 30; i++) {
-      const date = new Date(startDate);
-      date.setDate(date.getDate() + i);
-      const dateStr = date.toISOString().split('T')[0];
-      const minutes = calendar[dateStr] || 0;
-      
-      let colorClass = 'bg-gray-100'; // No reading
-      
-      if (minutes > 0) {
-        if (minutes >= this.readingStats.goals.dailyMinutes) {
-          colorClass = 'bg-green-500'; // Goal met
-        } else if (minutes >= this.readingStats.goals.dailyMinutes / 2) {
-          colorClass = 'bg-green-300'; // Good progress
-        } else {
-          colorClass = 'bg-green-100'; // Some reading
-        }
-      }
-      
-      // Highlight today
-      const isToday = dateStr === today.toISOString().split('T')[0];
-      const borderClass = isToday ? 'ring-2 ring-indigo-500' : '';
-      
-      html += `
-        <div class="h-6 rounded ${colorClass} ${borderClass}" 
-             title="${dateStr}: ${minutes} minutes">
-        </div>
-      `;
-    }
-    
-    html += '</div>';
-    calendarContainer.innerHTML = html;
-  }
-  
-  /**
-   * Show reading insights modal
-   */
-  showReadingInsights() {
-    // Create insights modal
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50';
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-modal', 'true');
-    
-    // Calculate insights
-    const totalSessions = this.readingStats.sessionsCompleted;
-    const averageSessionMinutes = totalSessions > 0 
-      ? Math.round(this.readingStats.totalTimeRead / totalSessions) 
-      : 0;
-    const bestReadingStreak = this.readingStats.streaks.longest;
-    const booksCompleted = this.readingStats.booksCompleted;
-    const totalReadingHours = Math.round(this.readingStats.totalTimeRead / 60 * 10) / 10;
-    
-    // Get top reading days
-    const calendar = this.readingStats.calendar;
-    const topDays = Object.entries(calendar)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3);
-    
-    // Create insights content
-    const content = document.createElement('div');
-    content.className = 'bg-white p-6 rounded-xl max-w-lg w-full max-h-[80vh] overflow-y-auto';
-    content.innerHTML = `
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold text-indigo-900">Your Reading Insights</h2>
-        <button class="close-modal text-gray-500 hover:text-gray-800">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      
-      <div class="mb-5">
-        <h3 class="font-semibold text-lg text-indigo-800 mb-2">Reading Summary</h3>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="bg-indigo-50 p-3 rounded-lg">
-            <div class="text-3xl font-bold text-indigo-800">${totalReadingHours}</div>
-            <div class="text-sm text-gray-600">Total Hours</div>
-          </div>
-          <div class="bg-indigo-50 p-3 rounded-lg">
-            <div class="text-3xl font-bold text-indigo-800">${booksCompleted}</div>
-            <div class="text-sm text-gray-600">Books Completed</div>
-          </div>
-          <div class="bg-indigo-50 p-3 rounded-lg">
-            <div class="text-3xl font-bold text-indigo-800">${bestReadingStreak}</div>
-            <div class="text-sm text-gray-600">Best Streak (Days)</div>
-          </div>
-          <div class="bg-indigo-50 p-3 rounded-lg">
-            <div class="text-3xl font-bold text-indigo-800">${averageSessionMinutes}</div>
-            <div class="text-sm text-gray-600">Avg. Session (min)</div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="mb-5">
-        <h3 class="font-semibold text-lg text-indigo-800 mb-2">Your Top Reading Days</h3>
-        <div class="space-y-2">
-          ${topDays.map(([date, minutes]) => {
-            const formattedDate = new Date(date).toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              month: 'short', 
-              day: 'numeric' 
-            });
-            return `
-              <div class="flex justify-between items-center bg-gray-50 p-2 rounded">
-                <span class="font-medium">${formattedDate}</span>
-                <span class="text-indigo-700 font-semibold">${minutes} minutes</span>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-      
-      <div class="mb-5">
-        <h3 class="font-semibold text-lg text-indigo-800 mb-2">Achievements</h3>
-        <div class="grid grid-cols-2 gap-3">
-          ${this.achievements
-            .filter(a => a.unlocked)
-            .map(a => `
-              <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-3 rounded-lg flex items-center space-x-3 border border-indigo-100">
-                <div class="text-2xl">${a.icon}</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 stagger-fade-in">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 spotlight-card">
+            <div class="flex flex-col">
+              <h4 class="text-sm uppercase text-gray-500 tracking-wide mb-4">Reading Summary</h4>
+              
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                 <div>
-                  <div class="font-semibold text-indigo-800">${a.title}</div>
-                  <div class="text-xs text-gray-600">${a.description}</div>
+                  <p class="text-3xl font-bold gradient-text">${timeString}</p>
+                  <p class="text-xs text-gray-500">Total Reading Time</p>
+                </div>
+                <div>
+                  <p class="text-3xl font-bold gradient-text">${booksStarted}</p>
+                  <p class="text-xs text-gray-500">Books Started</p>
+                </div>
+                <div>
+                  <p class="text-3xl font-bold gradient-text">${booksCompleted}</p>
+                  <p class="text-xs text-gray-500">Books Completed</p>
                 </div>
               </div>
-            `).join('')}
-        </div>
-        ${this.achievements.filter(a => a.unlocked).length === 0 ? 
-          '<p class="text-gray-500 text-center my-4">No achievements unlocked yet. Keep reading!</p>' : ''}
-      </div>
-      
-      <div>
-        <h3 class="font-semibold text-lg text-indigo-800 mb-2">Reading Goals</h3>
-        <div class="space-y-4">
-          <div>
-            <div class="flex justify-between text-sm mb-1">
-              <span>Daily Reading Goal</span>
-              <span id="daily-goal-value">${this.readingStats.goals.dailyMinutes} min</span>
+              
+              <div class="text-sm text-gray-600 italic border-l-4 border-indigo-200 pl-3 py-1">
+                "${randomQuote}"
+              </div>
             </div>
-            <input type="range" id="daily-goal-slider" min="5" max="120" step="5" 
-                   value="${this.readingStats.goals.dailyMinutes}" 
-                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
           </div>
           
-          <button id="save-goals" class="w-full py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors text-sm font-medium">
-            Save Goals
-          </button>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 spotlight-card">
+            <h4 class="text-sm uppercase text-gray-500 tracking-wide mb-4">Reading Goals</h4>
+            
+            <div class="space-y-4">
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="font-medium">Daily Reading Time</span>
+                  <span>${this.readingStats.dailyTimeRead || 0}/${this.readingStats.goals?.dailyMinutes || 20} minutes</span>
+                </div>
+                <div class="reading-progress-bar">
+                  <div class="reading-progress-value ${(this.readingStats.dailyTimeRead || 0) > 0 ? 'progress-pulse' : ''}" 
+                       style="width: ${Math.min(100, ((this.readingStats.dailyTimeRead || 0) / (this.readingStats.goals?.dailyMinutes || 20)) * 100)}%"></div>
+                </div>
+              </div>
+              
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="font-medium">Weekly Books</span>
+                  <span>${this.readingStats.weeklyBooksRead || 0}/${this.readingStats.goals?.weeklyBooks || 1} books</span>
+                </div>
+                <div class="reading-progress-bar">
+                  <div class="reading-progress-value ${(this.readingStats.weeklyBooksRead || 0) > 0 ? 'progress-pulse' : ''}" 
+                       style="width: ${Math.min(100, ((this.readingStats.weeklyBooksRead || 0) / (this.readingStats.goals?.weeklyBooks || 1)) * 100)}%"></div>
+                </div>
+              </div>
+              
+              <div class="mt-6 flex justify-between items-center">
+                <span class="text-sm text-indigo-600 font-medium">Current streak: 
+                  <span class="text-indigo-700 font-bold">${this.readingStats.streaks?.current || 0} days</span>
+                </span>
+                ${this.readingStats.streaks?.current > 0 ? 
+                  `<div class="flex items-center">
+                    <span class="text-amber-600 text-lg mr-1 icon-pulse">🔥</span>
+                    <span class="text-sm font-medium text-amber-600">${this.readingStats.streaks?.current}</span>
+                  </div>` : ''}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     `;
     
-    modal.appendChild(content);
-    
-    // Add to page
-    document.body.appendChild(modal);
-    
-    // Add event listeners
-    content.querySelector('.close-modal').addEventListener('click', () => {
-      document.body.removeChild(modal);
-    });
-    
-    // Slider for daily goal
-    const dailyGoalSlider = document.getElementById('daily-goal-slider');
-    const dailyGoalValue = document.getElementById('daily-goal-value');
-    
-    dailyGoalSlider.addEventListener('input', (e) => {
-      const value = e.target.value;
-      dailyGoalValue.textContent = `${value} min`;
-    });
-    
-    // Save goals button
-    document.getElementById('save-goals').addEventListener('click', () => {
-      this.readingStats.goals.dailyMinutes = parseInt(dailyGoalSlider.value);
-      this.saveReadingStats();
-      document.body.removeChild(modal);
-      this.notificationManager.showToast('Reading goals updated', 'success');
-    });
+    // Initialize spotlight effect on the new cards
+    if (this.animationManager) {
+      this.animationManager.setupSpotlightEffect();
+      
+      // Observe the main section for animations
+      const section = statsContainer.querySelector('.vite-section');
+      if (section) {
+        this.animationManager.observeElement(section);
+      }
+    } else {
+      // If animation manager isn't loaded yet, just show the section
+      const section = statsContainer.querySelector('.vite-section');
+      if (section) {
+        section.classList.add('loaded');
+      }
+    }
   }
 }

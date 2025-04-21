@@ -1,15 +1,5 @@
 # JavaScript Prototypes and Inheritance
 
-## Table of Contents
-1. [Introduction to Prototypes](#introduction-to-prototypes)
-2. [The Prototype Chain](#the-prototype-chain)
-3. [Working with Prototypes](#working-with-prototypes)
-4. [Object Creation Patterns](#object-creation-patterns)
-5. [Inheritance Patterns](#inheritance-patterns)
-6. [Advanced Object Composition](#advanced-object-composition)
-7. [Performance Optimization](#performance-optimization)
-8. [Best Practices](#best-practices)
-
 ## Introduction to Prototypes
 
 JavaScript's inheritance model is fundamentally different from classical object-oriented languages like Java or C++. Instead of classes (prior to ES6), JavaScript uses prototypes as the foundation for inheritance. Every object in JavaScript has an internal link to another object called its prototype.

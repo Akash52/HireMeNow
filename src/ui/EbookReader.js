@@ -52,7 +52,11 @@ export class EbookReader {
   init() {
     this.bindEvents();
     this.applyFontSize();
-    this.applyTheme();
+    
+    // Make sure we have the applyTheme method implemented
+    if (typeof this.applyTheme === 'function') {
+      this.applyTheme();
+    }
   }
 
   /**
@@ -63,18 +67,30 @@ export class EbookReader {
     try {
       // Currently we only support JSEbook
       if (bookId === 'js-prototypes') {
-        // Use fetch instead of import for markdown files
-        const response = await fetch('https://raw.githubusercontent.com/Akash52/HireMeNow/main/src/questions/ebook/JSEbook.md');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch book content: ${response.status}`);
+        try {
+          // Try remote URL first
+          const response = await fetch('https://raw.githubusercontent.com/Akash52/HireMeNow/main/src/questions/ebook/JSEbook.md');
+          
+          if (!response.ok) {
+            throw new Error(`Failed to fetch book content: ${response.status}`);
+          }
+          
+          const content = await response.text();
+          this.currentBook = {
+            id: bookId,
+            title: 'JavaScript Prototypes and Inheritance',
+            content: content
+          };
+        } catch (error) {
+          console.error('Error fetching from remote URL, using fallback content', error);
+          
+          // Use fallback content if remote fetch fails
+          this.currentBook = {
+            id: bookId,
+            title: 'JavaScript Prototypes and Inheritance',
+            content: this.getFallbackBookContent()
+          };
         }
-        
-        const content = await response.text();
-        this.currentBook = {
-          id: bookId,
-          title: 'JavaScript Prototypes and Inheritance',
-          content: content
-        };
         
         this.displayBook();
         this.notificationManager.showToast('eBook loaded successfully', 'success');
@@ -87,6 +103,182 @@ export class EbookReader {
       this.notificationManager.showToast('Failed to load eBook', 'error');
       return false;
     }
+  }
+  
+  /**
+   * Provides fallback content when remote loading fails
+   * @returns {string} Markdown content
+   */
+  getFallbackBookContent() {
+    return `# JavaScript Prototypes and Inheritance
+
+## Introduction to JavaScript Prototypes
+
+JavaScript is a prototype-based language, which means that objects inherit properties and methods from prototype objects. This is a different approach compared to class-based languages.
+
+### What is a Prototype?
+
+In JavaScript, every object has a prototype property, which is a reference to another object. When a property is accessed on an object and if the property is not found on that object, JavaScript looks at the object's prototype, and if not found there, it looks at the prototype's prototype, and so on until it either finds the property or reaches an object with a null prototype.
+
+\`\`\`javascript
+// Creating an object
+const person = {
+  name: 'John',
+  age: 30,
+  greet() {
+    return \`Hello, my name is \${this.name}\`;
+  }
+};
+
+// person.__proto__ is the prototype of the person object
+console.log(person.__proto__ === Object.prototype); // true
+\`\`\`
+
+## Prototypal Inheritance
+
+Inheritance in JavaScript is achieved through the prototype chain. A prototype chain is a series of linked objects that allows objects to inherit properties and methods from other objects.
+
+### How Prototypal Inheritance Works
+
+When you try to access a property of an object, JavaScript first looks at the object itself. If it can't find the property there, it looks at the object's prototype, and so on up the prototype chain.
+
+\`\`\`javascript
+// Parent constructor function
+function Animal(name) {
+  this.name = name;
+}
+
+// Adding a method to Animal's prototype
+Animal.prototype.speak = function() {
+  return \`\${this.name} makes a noise.\`;
+};
+
+// Child constructor function
+function Dog(name, breed) {
+  Animal.call(this, name); // Call parent constructor
+  this.breed = breed;
+}
+
+// Set up inheritance
+Dog.prototype = Object.create(Animal.prototype);
+Dog.prototype.constructor = Dog;
+
+// Override speak method
+Dog.prototype.speak = function() {
+  return \`\${this.name} barks.\`;
+};
+
+// Create instances
+const animal = new Animal('Generic Animal');
+const dog = new Dog('Rex', 'German Shepherd');
+
+console.log(animal.speak()); // "Generic Animal makes a noise."
+console.log(dog.speak());    // "Rex barks."
+console.log(dog.breed);      // "German Shepherd"
+\`\`\`
+
+## The Prototype Chain
+
+The prototype chain is the mechanism that allows objects to inherit properties and methods from their prototypes. When a property is accessed on an object, JavaScript looks up the prototype chain until it finds the property or reaches the end of the chain.
+
+### Visualizing the Prototype Chain
+
+\`\`\`javascript
+// Create objects with prototypal inheritance
+const grandparent = { lastName: 'Smith' };
+const parent = Object.create(grandparent);
+parent.firstName = 'John';
+const child = Object.create(parent);
+child.name = 'Chris';
+
+// Accessing properties up the prototype chain
+console.log(child.name);        // "Chris" - own property
+console.log(child.firstName);   // "John" - from parent
+console.log(child.lastName);    // "Smith" - from grandparent
+\`\`\`
+
+## ES6 Classes and Prototypal Inheritance
+
+ES6 introduced class syntax to JavaScript, but it's important to understand that this is primarily syntactic sugar over JavaScript's existing prototype-based inheritance.
+
+### Classes vs Prototypes
+
+\`\`\`javascript
+// ES6 Class syntax
+class Animal {
+  constructor(name) {
+    this.name = name;
+  }
+  
+  speak() {
+    return \`\${this.name} makes a noise.\`;
+  }
+}
+
+class Dog extends Animal {
+  constructor(name, breed) {
+    super(name);
+    this.breed = breed;
+  }
+  
+  speak() {
+    return \`\${this.name} barks.\`;
+  }
+}
+
+// The above is equivalent to the prototype example earlier
+\`\`\`
+
+## Performance Considerations
+
+Understanding the performance implications of prototypal inheritance is crucial for writing efficient JavaScript code.
+
+### Prototype Chain Lookup
+
+The longer the prototype chain, the more time it takes to look up properties, which can impact performance in performance-critical applications.
+
+\`\`\`javascript
+// Shallow prototype chain (faster lookups)
+const directObj = { prop: 'value' };
+console.log(directObj.prop); // Direct access
+
+// Deep prototype chain (slower lookups)
+const obj1 = {};
+const obj2 = Object.create(obj1);
+const obj3 = Object.create(obj2);
+const obj4 = Object.create(obj3);
+obj1.deepProp = 'deep value';
+console.log(obj4.deepProp); // Must traverse the chain
+\`\`\`
+
+## Best Practices
+
+Here are some best practices when working with prototypes and inheritance in JavaScript:
+
+1. **Keep the prototype chain short**: Minimize the depth of your prototype chains to improve performance.
+2. **Use composition over inheritance**: In many cases, composition can be more flexible than inheritance.
+3. **Understand the difference between prototype and instance properties**: Properties that should be shared go on the prototype; unique properties go on the instance.
+
+\`\`\`javascript
+// Bad: Adding methods to the instance
+function BadExample() {
+  this.method = function() {
+    // This creates a new function for each instance
+  };
+}
+
+// Good: Adding methods to the prototype
+function GoodExample() {}
+GoodExample.prototype.method = function() {
+  // This shares one function across all instances
+};
+\`\`\`
+
+## Summary
+
+JavaScript's prototypal inheritance system is powerful and flexible. By understanding how prototypes work, you can write more efficient and effective JavaScript code. Whether you use the older prototype syntax or the newer class syntax, the underlying mechanics remain the same.
+
+Remember that JavaScript's prototype system is different from classical inheritance found in languages like Java or C++. Embracing this difference and understanding how it works can lead to better code organization and structure in your JavaScript applications.`;
   }
 
   /**
@@ -114,26 +306,336 @@ export class EbookReader {
     // Display content with proper rendering
     contentArea.innerHTML = content;
     
-    // Generate and display table of contents
+    // Generate and display table of contents with Vite-style
     this.renderTableOfContents(toc, tocArea);
     
     // Apply syntax highlighting to code blocks
     this.applySyntaxHighlighting();
     
-    // Apply any saved bookmarks and highlights
-    this.applyBookmarks();
-    this.applyHighlights();
-    
-    // Restore last scroll position for this book
-    this.restoreScrollPosition();
-    
-    // Apply theme
-    this.applyTheme();
+    // Initialize clipboard for code blocks
+    this.initializeClipboard();
     
     // Add reading controls
     this.addReadingControls();
+    
+    // Apply saved bookmarks and highlights
+    this.applyBookmarks();
+    this.applyHighlights();
+    
+    // Apply current theme if the method exists
+    try {
+      if (typeof this.applyTheme === 'function') {
+        this.applyTheme();
+      }
+    } catch (error) {
+      console.warn('Error applying theme:', error);
+    }
+    
+    // Apply font size
+    this.applyFontSize();
+    
+    // Restore scroll position if available
+    this.restoreScrollPosition();
+    
+    // Update progress indicator
+    this.updateProgressIndicator();
+    
+    // Add back button functionality
+    const backButton = document.getElementById('ebook-back-btn');
+    if (backButton) {
+      backButton.addEventListener('click', () => {
+        // Show library view
+        const libraryTab = document.getElementById('ebook-library-tab');
+        if (libraryTab) {
+          libraryTab.click();
+        }
+      });
+    }
+    
+    // Setup mobile TOC toggle
+    const mobileTocToggle = document.getElementById('mobile-toc-toggle');
+    if (mobileTocToggle) {
+      mobileTocToggle.addEventListener('click', () => {
+        this.toggleMobileToc();
+      });
+    }
   }
-  
+
+  /**
+   * Toggle mobile TOC visibility
+   */
+  toggleMobileToc() {
+    // Create a mobile TOC overlay if it doesn't exist
+    let mobileToc = document.getElementById('mobile-toc-overlay');
+    
+    if (mobileToc) {
+      // If it exists, toggle visibility
+      mobileToc.classList.toggle('hidden');
+      return;
+    }
+    
+    // Create mobile TOC overlay
+    mobileToc = document.createElement('div');
+    mobileToc.id = 'mobile-toc-overlay';
+    mobileToc.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex md:hidden';
+    
+    const tocContent = document.createElement('div');
+    tocContent.className = 'w-3/4 max-w-xs h-full bg-white overflow-y-auto animate-slide-in-right';
+    
+    // Clone TOC content
+    const originalToc = document.getElementById('ebook-toc');
+    if (originalToc) {
+      tocContent.innerHTML = `
+        <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+          <h3 class="font-bold text-indigo-900">Table of Contents</h3>
+          <button id="close-mobile-toc" class="text-gray-500 hover:text-indigo-600">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-4">
+          ${originalToc.innerHTML}
+        </div>
+      `;
+    }
+    
+    mobileToc.appendChild(tocContent);
+    document.body.appendChild(mobileToc);
+    
+    // Add close functionality
+    const closeBtn = document.getElementById('close-mobile-toc');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        mobileToc.classList.add('hidden');
+      });
+    }
+    
+    // Close when clicking outside
+    mobileToc.addEventListener('click', (e) => {
+      if (e.target === mobileToc) {
+        mobileToc.classList.add('hidden');
+      }
+    });
+    
+    // Make TOC links work
+    tocContent.querySelectorAll('.toc-link').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileToc.classList.add('hidden');
+      });
+    });
+  }
+
+  /**
+   * Update reading progress indicator
+   */
+  updateProgressIndicator() {
+    const contentArea = document.getElementById('ebook-content');
+    const indicator = document.getElementById('reading-progress-indicator');
+    
+    if (!contentArea || !indicator) return;
+    
+    // Initial progress update
+    const updateProgress = () => {
+      const scrollTop = contentArea.scrollTop;
+      const scrollHeight = contentArea.scrollHeight;
+      const clientHeight = contentArea.clientHeight;
+      
+      const scrollPercent = (scrollTop / (scrollHeight - clientHeight)) * 100;
+      indicator.style.width = `${Math.min(100, Math.max(0, scrollPercent))}%`;
+    };
+    
+    // Update initially
+    updateProgress();
+    
+    // Update on scroll
+    contentArea.addEventListener('scroll', updateProgress);
+  }
+
+  /**
+   * Render table of contents with Vite-style
+   * @param {Array} toc - Table of contents data
+   * @param {HTMLElement} container - Container element
+   */
+  renderTableOfContents(toc, container) {
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // Create HTML for TOC with improved styling
+    const renderItems = (items, level = 0) => {
+      const list = document.createElement('ul');
+      list.className = level === 0 ? 'space-y-1' : 'pl-3 mt-1 space-y-1 border-l border-gray-100';
+      
+      items.forEach(item => {
+        const li = document.createElement('li');
+        
+        const link = document.createElement('a');
+        link.href = `#${item.id}`;
+        link.className = 'toc-link text-gray-600 hover:text-indigo-600';
+        link.textContent = item.text;
+        link.setAttribute('data-level', level);
+        
+        // Add click handler
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.navigateToSection(item.id);
+        });
+        
+        li.appendChild(link);
+        
+        // Add children if any
+        if (item.children && item.children.length > 0) {
+          li.appendChild(renderItems(item.children, level + 1));
+        }
+        
+        list.appendChild(li);
+      });
+      
+      return list;
+    };
+    
+    if (toc.length === 0) {
+      container.innerHTML = '<p class="text-gray-500 italic">No table of contents available</p>';
+    } else {
+      container.appendChild(renderItems(toc));
+    }
+  }
+
+  /**
+   * Add reading controls to the ebook container
+   */
+  addReadingControls() {
+    const container = document.getElementById('ebook-container');
+    if (!container) return;
+    
+    // Check if controls already exist
+    if (document.getElementById('ebook-reading-controls')) return;
+    
+    // Create reading controls with Vite-style
+    const controlsDiv = document.createElement('div');
+    controlsDiv.id = 'ebook-reading-controls';
+    controlsDiv.className = 'fixed bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 bg-indigo-600/90 backdrop-blur-sm text-white px-4 py-2 rounded-full shadow-lg z-40 transition-all duration-300';
+    
+    // Add control buttons
+    controlsDiv.innerHTML = `
+      <button id="focus-mode-btn" class="p-2 hover:bg-indigo-500/50 rounded-full" title="Toggle Focus Mode">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+        </svg>
+      </button>
+      
+      <div class="h-5 border-r border-white/20"></div>
+      
+      <button id="font-size-small" class="p-2 hover:bg-indigo-500/50 rounded-full" title="Small Text">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+        </svg>
+      </button>
+      <button id="font-size-medium" class="p-2 hover:bg-indigo-500/50 rounded-full" title="Medium Text">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+        </svg>
+      </button>
+      <button id="font-size-large" class="p-2 hover:bg-indigo-500/50 rounded-full" title="Large Text">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+        </svg>
+      </button>
+      
+      <div class="h-5 border-r border-white/20"></div>
+      
+      <button id="theme-toggle-btn" class="p-2 hover:bg-indigo-500/50 rounded-full relative" title="Change Theme">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+        </svg>
+      </button>
+      
+      <div class="h-5 border-r border-white/20"></div>
+      
+      <button id="ebook-bookmark-btn" class="p-2 hover:bg-indigo-500/50 rounded-full" title="Add Bookmark">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+        </svg>
+      </button>
+      
+      <button id="ebook-highlight-btn" class="p-2 hover:bg-indigo-500/50 rounded-full" title="Highlight Text">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5l-3.9 19.5m-2.1-19.5l-3.9 19.5" />
+        </svg>
+      </button>
+      
+      <button id="ebook-bookmarks-btn" class="p-2 hover:bg-indigo-500/50 rounded-full" title="View Bookmarks">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+        </svg>
+      </button>
+    `;
+    
+    container.appendChild(controlsDiv);
+    
+    // Show/hide controls on mouse movement
+    let timeout;
+    const showControls = () => {
+      controlsDiv.classList.remove('opacity-0');
+      clearTimeout(timeout);
+      
+      timeout = setTimeout(() => {
+        controlsDiv.classList.add('opacity-0');
+      }, 3000);
+    };
+    
+    const contentArea = document.getElementById('ebook-content');
+    if (contentArea) {
+      contentArea.addEventListener('mousemove', showControls);
+      contentArea.addEventListener('scroll', showControls);
+      contentArea.addEventListener('click', showControls);
+    }
+    
+    // Add event listeners for control buttons
+    document.getElementById('theme-toggle-btn').addEventListener('click', (e) => {
+      this.showThemeSelector(e);
+    });
+    
+    // Add direct event listeners to font size buttons
+    document.getElementById('font-size-small').addEventListener('click', () => {
+      this.changeFontSize('small');
+    });
+    
+    document.getElementById('font-size-medium').addEventListener('click', () => {
+      this.changeFontSize('medium');
+    });
+    
+    document.getElementById('font-size-large').addEventListener('click', () => {
+      this.changeFontSize('large');
+    });
+    
+    // Add event listeners for other buttons
+    document.getElementById('ebook-bookmark-btn').addEventListener('click', () => {
+      this.toggleBookmark();
+    });
+    
+    document.getElementById('ebook-highlight-btn').addEventListener('click', () => {
+      this.highlightSelection();
+    });
+    
+    document.getElementById('ebook-bookmarks-btn').addEventListener('click', () => {
+      this.showBookmarksList();
+    });
+    
+    document.getElementById('focus-mode-btn').addEventListener('click', () => {
+      const container = document.getElementById('ebook-container');
+      const isActive = container.classList.contains('focus-mode');
+      
+      if (window.ebookManager) {
+        window.ebookManager.toggleFocusMode(!isActive);
+      }
+    });
+    
+    // Initially hide controls after 3s
+    showControls();
+  }
+
   /**
    * Process markdown content to extract TOC and enhance content
    * @param {string} markdown - Raw markdown content
@@ -221,28 +723,40 @@ export class EbookReader {
   markdownToHtml(markdown) {
     let html = markdown;
     
-    // Convert code blocks with copy button functionality
+    // Convert code blocks with Vite-style copy button functionality
     html = html.replace(/```([\w-]+)?\n([\s\S]*?)\n```/g, (match, language, code) => {
       const lang = language || 'javascript';
       const escapedCode = this.escapeHtml(code.trim());
       const uniqueId = 'code-' + Math.random().toString(36).substring(2, 15);
       
       return `
-        <div class="code-block-container relative group">
-          <div class="code-header bg-gray-800 text-gray-300 text-xs py-1 px-3 flex justify-between items-center">
-            <span>${lang}</span>
-            <button class="copy-code-btn" data-clipboard-target="#${uniqueId}" aria-label="Copy code">
-              <i class="fas fa-copy"></i> Copy
-            </button>
+        <div class="vite-code-block group mb-6">
+          <div class="vite-code-header">
+            <div class="vite-code-dots">
+              <div class="vite-code-dot"></div>
+              <div class="vite-code-dot"></div>
+              <div class="vite-code-dot"></div>
+            </div>
+            <div class="flex items-center">
+              <span class="mr-3">${lang}</span>
+              <button class="copy-code-btn opacity-0 group-hover:opacity-100 transition-opacity duration-200" data-clipboard-target="#${uniqueId}" aria-label="Copy code">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
+                </svg>
+              </button>
+            </div>
           </div>
-          <pre><code id="${uniqueId}" class="language-${lang}">${escapedCode}</code></pre>
+          <div class="vite-scrollbar overflow-auto max-h-[500px] p-4">
+            <pre class="m-0"><code id="${uniqueId}" class="language-${lang}">${escapedCode}</code></pre>
+          </div>
         </div>
       `;
     });
     
     // Convert inline code
-    html = html.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+    html = html.replace(/`([^`]+)`/g, '<code class="inline-code bg-gray-100 text-indigo-600 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>');
     
+    // Continue with the rest of the conversion
     // Convert headers (not handled by our section approach)
     html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
     html = html.replace(/^##### (.+)$/gm, '<h5>$1</h5>');
@@ -416,15 +930,19 @@ export class EbookReader {
           if (navigator.clipboard) {
             navigator.clipboard.writeText(textToCopy)
               .then(() => {
-                // Show copied feedback
-                const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                button.classList.add('copied');
+                // Show copied feedback with animation
+                const originalHTML = button.innerHTML;
+                button.innerHTML = `
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-green-500">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                `;
+                button.classList.add('text-green-500');
                 
                 // Reset button after 2 seconds
                 setTimeout(() => {
-                  button.innerHTML = originalText;
-                  button.classList.remove('copied');
+                  button.innerHTML = originalHTML;
+                  button.classList.remove('text-green-500');
                 }, 2000);
               })
               .catch(err => {
@@ -442,13 +960,17 @@ export class EbookReader {
             
             try {
               document.execCommand('copy');
-              const originalText = button.innerHTML;
-              button.innerHTML = '<i class="fas fa-check"></i> Copied!';
-              button.classList.add('copied');
+              const originalHTML = button.innerHTML;
+              button.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-green-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+              `;
+              button.classList.add('text-green-500');
               
               setTimeout(() => {
-                button.innerHTML = originalText;
-                button.classList.remove('copied');
+                button.innerHTML = originalHTML;
+                button.classList.remove('text-green-500');
               }, 2000);
             } catch (err) {
               console.error('Could not copy text: ', err);
@@ -789,71 +1311,80 @@ export class EbookReader {
    * Show bookmarks list
    */
   showBookmarksList() {
-    const bookmarksForCurrentBook = this.bookmarks.filter(b => b.bookId === this.currentBook.id);
+    if (!this.currentBook) return;
     
-    if (bookmarksForCurrentBook.length === 0) {
-      this.notificationManager.showToast('No bookmarks for this book', 'info');
+    const bookmarks = this.bookmarks.filter(b => b.bookId === this.currentBook.id);
+    
+    if (bookmarks.length === 0) {
+      this.notificationManager.showToast('No bookmarks in this book', 'info');
       return;
     }
     
-    // Create modal
+    // Create modern modal for bookmarks
     const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 ios-modal';
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-modal', 'true');
-    modal.setAttribute('aria-labelledby', 'bookmarks-title');
+    modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4';
     
-    // Create modal content
     const content = document.createElement('div');
-    content.className = 'bg-white mx-4 p-5 sm:p-8 rounded-2xl max-w-md w-full shadow-2xl animate-slide-up border border-gray-200 ios-modal-content';
+    content.className = 'bg-white rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden flex flex-col animate-scale-in';
     
-    // Create modal header
-    let html = `
-      <div class="flex justify-between items-center mb-4">
-        <h3 id="bookmarks-title" class="text-lg sm:text-xl font-bold text-indigo-900">Bookmarks</h3>
-        <button class="close-modal text-gray-500 hover:text-gray-800">
-          <i class="fas fa-times"></i>
+    content.innerHTML = `
+      <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+        <h3 class="font-bold text-lg text-indigo-900">Your Bookmarks</h3>
+        <button class="close-modal text-gray-400 hover:text-gray-600">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
-      <div class="bookmarks-list max-h-80 overflow-y-auto">
+      
+      <div class="overflow-y-auto p-4 space-y-2 flex-1">
+        ${bookmarks.map(bookmark => `
+          <div class="bookmark-item p-3 rounded-lg border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/50 cursor-pointer transition-all" data-id="${bookmark.id}">
+            <div class="flex justify-between">
+              <span class="text-indigo-600">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5 inline-block">
+                  <path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                </svg>
+              </span>
+              <button class="delete-bookmark text-gray-400 hover:text-red-500" data-id="${bookmark.id}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                </svg>
+              </button>
+            </div>
+            <p class="mt-1 text-sm">${bookmark.text}</p>
+            <p class="text-xs text-gray-500 mt-1">${new Date(bookmark.date).toLocaleDateString()}</p>
+          </div>
+        `).join('')}
+      </div>
     `;
     
-    // Add bookmarks
-    html += '<ul class="divide-y divide-gray-200">';
-    bookmarksForCurrentBook.forEach(bookmark => {
-      html += `
-        <li class="py-3">
-          <a href="#${bookmark.id}" class="bookmark-link flex justify-between group">
-            <span class="text-indigo-600 group-hover:text-indigo-800">${bookmark.text}</span>
-            <button class="delete-bookmark text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" data-id="${bookmark.id}">
-              <i class="fas fa-trash-alt"></i>
-            </button>
-          </a>
-        </li>
-      `;
-    });
-    html += '</ul>';
-    html += '</div>';
-    
-    content.innerHTML = html;
     modal.appendChild(content);
     
-    // Add event listeners
+    // Close on click outside
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        document.body.removeChild(modal);
+      }
+    });
+    
+    // Close button
     content.querySelector('.close-modal').addEventListener('click', () => {
       document.body.removeChild(modal);
     });
     
-    content.querySelectorAll('.bookmark-link').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const target = document.getElementById(link.getAttribute('href').substring(1));
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth' });
+    // Navigate to bookmark on click
+    content.querySelectorAll('.bookmark-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (!e.target.closest('.delete-bookmark')) {
+          const id = item.getAttribute('data-id');
+          this.navigateToSection(id);
           document.body.removeChild(modal);
         }
       });
     });
     
+    // Delete bookmark
     content.querySelectorAll('.delete-bookmark').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -868,223 +1399,6 @@ export class EbookReader {
     
     // Add modal to page
     document.body.appendChild(modal);
-  }
-  
-  /**
-   * Add reading controls to the ebook container
-   */
-  addReadingControls() {
-    const container = document.getElementById('ebook-container');
-    if (!container) return;
-    
-    // Check if controls already exist
-    if (document.getElementById('ebook-reading-controls')) return;
-    
-    // Create reading controls
-    const controlsDiv = document.createElement('div');
-    controlsDiv.id = 'ebook-reading-controls';
-    controlsDiv.className = 'fixed bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3 bg-indigo-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-full shadow-lg z-40 transition-all duration-300 hover:bg-indigo-800';
-    
-    // Add control buttons
-    controlsDiv.innerHTML = `
-      <button id="focus-mode-btn" class="p-2 hover:bg-indigo-700 rounded-full" title="Toggle Focus Mode">
-        <i class="fas fa-eye"></i>
-      </button>
-      <button id="theme-toggle-btn" class="p-2 hover:bg-indigo-700 rounded-full" title="Change Theme">
-        <i class="fas fa-palette"></i>
-      </button>
-      <div class="font-controls flex space-x-1">
-        <button id="font-size-small" class="p-2 hover:bg-indigo-700 rounded-full" title="Small Text">
-          <i class="fas fa-text-height"></i><small>-</small>
-        </button>
-        <button id="font-size-medium" class="p-2 hover:bg-indigo-700 rounded-full" title="Medium Text">
-          <i class="fas fa-text-height"></i>
-        </button>
-        <button id="font-size-large" class="p-2 hover:bg-indigo-700 rounded-full" title="Large Text">
-          <i class="fas fa-text-height"></i><small>+</small>
-        </button>
-      </div>
-      <div class="separator border-l border-indigo-700 mx-1"></div>
-      <button id="ebook-bookmark-btn" class="p-2 hover:bg-indigo-700 rounded-full" title="Add Bookmark">
-        <i class="fas fa-bookmark"></i>
-      </button>
-      <button id="ebook-highlight-btn" class="p-2 hover:bg-indigo-700 rounded-full" title="Highlight Text">
-        <i class="fas fa-highlighter"></i>
-      </button>
-      <button id="ebook-bookmarks-btn" class="p-2 hover:bg-indigo-700 rounded-full" title="View Bookmarks">
-        <i class="fas fa-list"></i>
-      </button>
-    `;
-    
-    // Add controls to container
-    document.body.appendChild(controlsDiv);
-    
-    // Auto-hide controls when not interacting
-    let timeoutId;
-    function showControls() {
-      controlsDiv.classList.remove('opacity-0');
-      clearTimeout(timeoutId);
-      
-      timeoutId = setTimeout(() => {
-        if (!controlsDiv.matches(':hover')) {
-          controlsDiv.classList.add('opacity-0');
-        }
-      }, 3000);
-    }
-    
-    controlsDiv.addEventListener('mouseenter', () => {
-      clearTimeout(timeoutId);
-      controlsDiv.classList.remove('opacity-0');
-    });
-    
-    controlsDiv.addEventListener('mouseleave', () => {
-      timeoutId = setTimeout(() => {
-        controlsDiv.classList.add('opacity-0');
-      }, 2000);
-    });
-    
-    document.getElementById('ebook-content').addEventListener('mousemove', showControls);
-    
-    // Add theme selection dropdown event
-    document.getElementById('theme-toggle-btn').addEventListener('click', (e) => {
-      this.showThemeSelector(e);
-    });
-    
-    // Add direct event listeners to font size buttons
-    document.getElementById('font-size-small').addEventListener('click', () => {
-      this.changeFontSize('small');
-    });
-    
-    document.getElementById('font-size-medium').addEventListener('click', () => {
-      this.changeFontSize('medium');
-    });
-    
-    document.getElementById('font-size-large').addEventListener('click', () => {
-      this.changeFontSize('large');
-    });
-    
-    // Add event listeners for other buttons
-    document.getElementById('ebook-bookmark-btn').addEventListener('click', () => {
-      this.toggleBookmark();
-    });
-    
-    document.getElementById('ebook-highlight-btn').addEventListener('click', () => {
-      this.highlightSelection();
-    });
-    
-    document.getElementById('ebook-bookmarks-btn').addEventListener('click', () => {
-      this.showBookmarksList();
-    });
-    
-    document.getElementById('focus-mode-btn').addEventListener('click', () => {
-      const container = document.getElementById('ebook-container');
-      const isActive = container.classList.contains('focus-mode');
-      
-      if (window.ebookManager) {
-        window.ebookManager.toggleFocusMode(!isActive);
-      }
-    });
-    
-    // Initially hide controls after 3s
-    showControls();
-  }
-  
-  /**
-   * Show theme selector dropdown
-   * @param {Event} e - Click event
-   */
-  showThemeSelector(e) {
-    e.stopPropagation();
-    
-    // Remove existing theme selector if present
-    const existingSelector = document.getElementById('theme-selector');
-    if (existingSelector) {
-      existingSelector.remove();
-      return;
-    }
-    
-    // Create theme selector
-    const themeSelector = document.createElement('div');
-    themeSelector.id = 'theme-selector';
-    themeSelector.className = 'absolute bottom-full mb-2 bg-white rounded-lg shadow-lg p-3 min-w-[150px] text-gray-800 grid grid-cols-1 gap-2 transform animate-pop-in';
-    
-    // Add themes
-    for (const [themeId, theme] of Object.entries(this.availableThemes)) {
-      const themeButton = document.createElement('button');
-      themeButton.className = `
-        flex items-center p-2 rounded hover:bg-gray-100 transition-colors
-        ${this.theme === themeId ? 'bg-gray-200' : ''}
-      `;
-      themeButton.innerHTML = `
-        <span class="w-4 h-4 rounded-full ${theme.bgColor} border border-gray-300 mr-3"></span>
-        ${theme.name}
-      `;
-      
-      themeButton.addEventListener('click', () => {
-        this.changeTheme(themeId);
-        themeSelector.remove();
-      });
-      
-      themeSelector.appendChild(themeButton);
-    }
-    
-    // Position the dropdown
-    const button = e.currentTarget;
-    const buttonRect = button.getBoundingClientRect();
-    
-    // Create a parent for positioning (relative to the viewport)
-    const positionWrapper = document.createElement('div');
-    positionWrapper.style.position = 'fixed';
-    positionWrapper.style.zIndex = '100';
-    positionWrapper.style.left = `${buttonRect.left + buttonRect.width/2}px`;
-    positionWrapper.style.bottom = `${window.innerHeight - buttonRect.top + 10}px`;
-    positionWrapper.style.transform = 'translateX(-50%)';
-    positionWrapper.appendChild(themeSelector);
-    
-    // Add to page
-    document.body.appendChild(positionWrapper);
-    
-    // Close when clicking outside
-    document.addEventListener('click', function closeThemeSelector(event) {
-      if (!themeSelector.contains(event.target) && event.target !== button) {
-        if (document.body.contains(positionWrapper)) {
-          document.body.removeChild(positionWrapper);
-        }
-        document.removeEventListener('click', closeThemeSelector);
-      }
-    });
-  }
-  
-  /**
-   * Change theme
-   * @param {string} themeId - ID of the theme to apply
-   */
-  changeTheme(themeId) {
-    if (!this.availableThemes[themeId]) return;
-    
-    this.theme = themeId;
-    localStorage.setItem('ebookTheme', themeId);
-    this.applyTheme();
-    
-    this.notificationManager.showToast(`Theme changed to ${this.availableThemes[themeId].name}`, 'info');
-  }
-  
-  /**
-   * Apply current theme
-   */
-  applyTheme() {
-    const contentArea = document.getElementById('ebook-content');
-    if (!contentArea) return;
-    
-    const theme = this.availableThemes[this.theme] || this.availableThemes.default;
-    
-    // Remove all theme classes
-    Object.values(this.availableThemes).forEach(theme => {
-      contentArea.classList.remove(theme.bgColor, theme.textColor);
-    });
-    
-    // Add new theme classes
-    contentArea.classList.add(theme.bgColor, theme.textColor);
   }
 
   /**
@@ -1114,5 +1428,86 @@ export class EbookReader {
     if (tocItem) {
       this.highlightCurrentTocItem(tocItem);
     }
+  }
+
+  /**
+   * Apply current theme settings
+   */
+  applyTheme() {
+    const contentArea = document.getElementById('ebook-content');
+    const container = document.getElementById('ebook-container');
+    if (!contentArea || !container) return;
+    
+    // Clear previous theme classes
+    const themeClasses = Object.values(this.availableThemes)
+      .map(theme => `${theme.bgColor} ${theme.textColor}`).join(' ');
+    
+    contentArea.classList.remove(...themeClasses.split(' '));
+    
+    // Apply current theme
+    const theme = this.availableThemes[this.theme] || this.availableThemes.default;
+    contentArea.classList.add(theme.bgColor, theme.textColor);
+    
+    // Set theme attribute for CSS targeting
+    container.setAttribute('data-theme', this.theme);
+    
+    // Save theme preference
+    localStorage.setItem('ebookTheme', this.theme);
+  }
+
+  /**
+   * Show theme selector
+   * @param {Event} event - Click event
+   */
+  showThemeSelector(event) {
+    // Prevent event from bubbling up
+    event.stopPropagation();
+    
+    // Create theme selector dropdown
+    const dropdown = document.createElement('div');
+    dropdown.className = 'absolute bottom-full right-0 mb-2 p-2 bg-white rounded-lg shadow-xl z-50 animate-scale-in';
+    
+    const themesList = document.createElement('div');
+    themesList.className = 'grid grid-cols-2 gap-2';
+    
+    // Add theme options
+    Object.entries(this.availableThemes).forEach(([key, theme]) => {
+      const themeOption = document.createElement('button');
+      themeOption.className = `p-2 rounded-md text-center ${key === this.theme ? 'ring-2 ring-indigo-500' : ''}`;
+      themeOption.style.backgroundColor = theme.bgColor.replace('bg-', '');
+      themeOption.style.color = theme.textColor.replace('text-', '');
+      themeOption.textContent = theme.name;
+      
+      themeOption.addEventListener('click', () => {
+        this.theme = key;
+        this.applyTheme();
+        this.notificationManager.showToast(`Theme changed to ${theme.name}`, 'info');
+        document.body.removeChild(dropdown);
+      });
+      
+      themesList.appendChild(themeOption);
+    });
+    
+    dropdown.appendChild(themesList);
+    
+    // Position and add to document
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+    dropdown.style.right = `${window.innerWidth - rect.right}px`;
+    
+    document.body.appendChild(dropdown);
+    
+    // Close when clicking outside
+    const closeDropdown = (e) => {
+      if (!dropdown.contains(e.target) && e.target !== button) {
+        document.body.removeChild(dropdown);
+        document.removeEventListener('click', closeDropdown);
+      }
+    };
+    
+    // Add click listener after a small delay to prevent immediate closing
+    setTimeout(() => {
+      document.addEventListener('click', closeDropdown);
+    }, 100);
   }
 }

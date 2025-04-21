@@ -1,129 +1,231 @@
 /**
- * Animation Manager handles all UI animations and transitions
+ * AnimationManager provides Vite-like animations for the eBook reader
  */
 export class AnimationManager {
-  fadeIn(element) {
-    if (!element) return;
-
-    element.classList.add('fade-in');
-    element.classList.remove('hidden');
-
-    setTimeout(() => {
-      element.classList.remove('fade-in');
-    }, 500);
+  constructor() {
+    this.intersectionObserver = null;
+    this.resizeObserver = null;
+    this.spotlightElements = new Set();
   }
 
-  fadeOut(element) {
-    if (!element) return;
-    if (element.classList.contains('hidden')) return;
-
-    element.classList.add('fade-out');
-
-    setTimeout(() => {
-      element.classList.add('hidden');
-      element.classList.remove('fade-out');
-    }, 500);
+  /**
+   * Initialize animation effects
+   */
+  init() {
+    this.setupScrollAnimations();
+    this.setupSpotlightEffect();
+    this.setupTypewriterEffect();
+    this.handleFadeInSections();
   }
 
-  animateButton(button) {
-    if (!button) return;
+  /**
+   * Setup intersection observer for scroll-based animations
+   */
+  setupScrollAnimations() {
+    // Set up intersection observer for fade-in animations
+    if ('IntersectionObserver' in window) {
+      this.intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('loaded');
+              // Unobserve after animation has been triggered
+              this.intersectionObserver.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          root: null,
+          rootMargin: '0px',
+          threshold: 0.1,
+        }
+      );
 
-    button.classList.add('btn-pulse');
-    setTimeout(() => {
-      button.classList.remove('btn-pulse');
-    }, 300);
-  }
-
-  animateProgressBar(progressBar, fromPercent, toPercent) {
-    if (!progressBar) return;
-
-    const duration = 500; // ms
-    const start = performance.now();
-
-    const animate = (time) => {
-      const elapsed = time - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const currentPercent = fromPercent + (toPercent - fromPercent) * progress;
-      progressBar.style.width = `${currentPercent}%`;
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-
-    requestAnimationFrame(animate);
-  }
-
-  animateScoreCounter(scorePercent, scoreText, finalScore, totalQuestions, scorePercentage) {
-    if (!scorePercent || !scoreText) return;
-
-    const duration = 2000; // ms
-    const start = performance.now();
-    let currentScore = 0;
-    let currentPercentage = 0;
-
-    const animate = (time) => {
-      const elapsed = time - start;
-      const progress = Math.min(elapsed / duration, 1);
-
-      // Easing function for smoother animation
-      const easeOutQuart = 1 - (1 - progress) ** 4;
-
-      currentScore = Math.round(finalScore * easeOutQuart);
-      currentPercentage = Math.round(scorePercentage * easeOutQuart);
-
-      scorePercent.textContent = `${currentPercentage}%`;
-      scoreText.textContent = `You scored ${currentScore} out of ${totalQuestions}`;
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-
-    requestAnimationFrame(animate);
-  }
-
-  showConfetti() {
-    // Create confetti container if it doesn't exist
-    let confettiContainer = document.getElementById('confetti-container');
-
-    if (!confettiContainer) {
-      confettiContainer = document.createElement('div');
-      confettiContainer.id = 'confetti-container';
-      document.body.appendChild(confettiContainer);
+      // Observe all elements with the vite-section class
+      document.querySelectorAll('.vite-section').forEach((element) => {
+        this.intersectionObserver.observe(element);
+      });
+    } else {
+      // Fallback for browsers that don't support IntersectionObserver
+      document.querySelectorAll('.vite-section').forEach((element) => {
+        element.classList.add('loaded');
+      });
     }
+  }
 
-    // Create confetti pieces
-    const colors = [
-      '#f44336',
-      '#e91e63',
-      '#9c27b0',
-      '#673ab7',
-      '#3f51b5',
-      '#2196f3',
-      '#03a9f4',
-      '#00bcd4',
-      '#009688',
-      '#4CAF50',
-    ];
-    const confettiCount = 150;
+  /**
+   * Apply the spotlight hover effect
+   */
+  setupSpotlightEffect() {
+    const spotlightCards = document.querySelectorAll('.spotlight-card');
+    
+    spotlightCards.forEach((card) => {
+      this.spotlightElements.add(card);
+      
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        
+        card.style.setProperty('--x', `${x}%`);
+        card.style.setProperty('--y', `${y}%`);
+      });
+      
+      card.addEventListener('mouseleave', () => {
+        card.style.setProperty('--x', '50%');
+        card.style.setProperty('--y', '50%');
+      });
+    });
+  }
 
-    confettiContainer.innerHTML = '';
+  /**
+   * Setup typewriter effect for hero elements
+   */
+  setupTypewriterEffect() {
+    const typewriterElements = document.querySelectorAll('.typewriter');
+    
+    typewriterElements.forEach((element) => {
+      // Store original text
+      const originalText = element.textContent;
+      element.textContent = '';
+      
+      // Add characters one by one
+      let i = 0;
+      const typeCharacter = () => {
+        if (i < originalText.length) {
+          element.textContent += originalText.charAt(i);
+          i++;
+          setTimeout(typeCharacter, 100);
+        }
+      };
+      
+      // Start typing effect
+      setTimeout(typeCharacter, 500);
+    });
+  }
 
-    for (let i = 0; i < confettiCount; i++) {
-      const confetti = document.createElement('div');
-      confetti.className = 'confetti';
-      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-      confetti.style.left = `${Math.random() * 100}vw`;
-      confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
-      confetti.style.animationDelay = `${Math.random() * 2}s`;
+  /**
+   * Add staggered fade-in effect to sections
+   */
+  handleFadeInSections() {
+    document.querySelectorAll('.stagger-fade-in').forEach((container) => {
+      // Force a reflow to ensure the animation triggers properly
+      void container.offsetWidth;
+      
+      // Add a class to trigger animations
+      container.classList.add('animate');
+    });
+  }
 
-      confettiContainer.appendChild(confetti);
+  /**
+   * Create a fluid animation for the header background
+   * @param {HTMLElement} element - The element to animate
+   */
+  createFluidBackground(element) {
+    if (!element) return;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Make canvas full size of the element
+    const resizeCanvas = () => {
+      canvas.width = element.offsetWidth;
+      canvas.height = element.offsetHeight;
+    };
+    
+    // Setup canvas
+    canvas.style.position = 'absolute';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.zIndex = '-1';
+    canvas.style.opacity = '0.4';
+    element.style.position = 'relative';
+    element.style.overflow = 'hidden';
+    
+    element.appendChild(canvas);
+    resizeCanvas();
+    
+    // Add resize listener
+    if ('ResizeObserver' in window) {
+      this.resizeObserver = new ResizeObserver(resizeCanvas);
+      this.resizeObserver.observe(element);
+    } else {
+      window.addEventListener('resize', resizeCanvas);
     }
+    
+    // Animation parameters
+    const circles = [];
+    for (let i = 0; i < 5; i++) {
+      circles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: 50 + Math.random() * 100,
+        color: `rgba(79, 70, 229, ${0.05 + Math.random() * 0.1})`,
+        speed: 0.2 + Math.random() * 0.5,
+        angle: Math.random() * Math.PI * 2,
+      });
+    }
+    
+    // Animation loop
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw and update circles
+      circles.forEach((circle) => {
+        // Move in a random direction
+        circle.x += Math.cos(circle.angle) * circle.speed;
+        circle.y += Math.sin(circle.angle) * circle.speed;
+        
+        // Bounce off walls
+        if (circle.x < 0 || circle.x > canvas.width) {
+          circle.angle = Math.PI - circle.angle;
+        }
+        if (circle.y < 0 || circle.y > canvas.height) {
+          circle.angle = -circle.angle;
+        }
+        
+        // Draw circle
+        ctx.beginPath();
+        ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+        ctx.fillStyle = circle.color;
+        ctx.fill();
+      });
+      
+      requestAnimationFrame(animate);
+    };
+    
+    // Start animation
+    animate();
+  }
 
-    // Remove confetti after animation
-    setTimeout(() => {
-      confettiContainer.remove();
-    }, 5000);
+  /**
+   * Add to the observer list for new sections
+   * @param {HTMLElement} element - The element to observe
+   */
+  observeElement(element) {
+    if (this.intersectionObserver && element) {
+      this.intersectionObserver.observe(element);
+    }
+  }
+
+  /**
+   * Cleanup resources when no longer needed
+   */
+  cleanup() {
+    if (this.intersectionObserver) {
+      this.intersectionObserver.disconnect();
+    }
+    
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+    
+    // Remove event listeners from spotlight elements
+    this.spotlightElements.forEach((element) => {
+      element.removeEventListener('mousemove', null);
+      element.removeEventListener('mouseleave', null);
+    });
   }
 }

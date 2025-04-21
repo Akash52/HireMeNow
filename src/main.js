@@ -770,6 +770,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Initialize router (add this before the existing URL parameter checks)
   const router = new Router();
+  // Make router globally accessible right away
+  window.appRouter = router;
 
   // Register routes
   router
@@ -872,9 +874,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       navInterviewBtn.classList.remove('active');
       navEbookBtn.classList.add('active');
       
-      // Initialize and load specific book if provided
+      // Ensure ebook visibility with fallback function
+      import('./ui/EbookFallback.js').then(module => {
+        setTimeout(() => {
+          module.ensureEbookVisibility();
+        }, 500);
+      }).catch(err => {
+        console.error('Failed to load ebook fallback:', err);
+      });
+      
+      // Show correct tab based on if a book is specified
       if (params.book) {
-        ebookManager.openBook(params.book);
+        // Switch to reader tab when a book is specified
+        const readerTab = document.getElementById('ebook-tab');
+        if (readerTab) {
+          readerTab.click();
+        }
+        
+        // Try to open the book
+        if (window.ebookManager) {
+          ebookManager.openBook(params.book);
+        }
+      } else {
+        // Switch to library tab when no book is specified
+        const libraryTab = document.getElementById('ebook-library-tab');
+        if (libraryTab) {
+          libraryTab.click();
+        }
       }
       
       analyticsManager.trackEvent('view_ebook_section', {
