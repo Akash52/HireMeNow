@@ -1,4 +1,5 @@
-import { driver } from 'driver.js';
+// Remove Driver.js imports
+// import { driver } from 'driver.js';
 import { BaseUIManager } from './ui/BaseUIManager.js';
 import { AnimationManager } from './ui/AnimationManager.js';
 import { AccessibilityManager } from './ui/AccessibilityManager.js';
@@ -7,7 +8,8 @@ import { QuestionManager } from './ui/QuestionManager.js';
 import { ResultManager } from './ui/ResultManager.js';
 import { ShareManager } from './ui/ShareManager.js';
 import NotificationManager from './ui/NotificationManager.js';
-import 'driver.js/dist/driver.css';
+// Remove Driver.js CSS import
+// import 'driver.js/dist/driver.css';
 
 /**
  * Main UI Manager that integrates all UI modules
@@ -26,27 +28,180 @@ export default class UIManager {
     this.resultManager = new ResultManager(this.baseUI, this.animationManager);
     this.shareManager = new ShareManager(this.notificationManager);
 
-    // Initialize the driver instance with common configuration
-    this.driverConfig = {
-      animate: true,
-      opacity: 0.7,
-      smoothScroll: true,
-      showProgress: true,
-      showButtons: ['close', 'next', 'previous'],
+    // Replace driver.js with simpler tooltip configuration
+    this.tooltipConfig = {
+      showDelay: 300,
+      hideDelay: 200,
+      position: 'auto',
+      className: 'custom-tooltip',
+      showClose: true
     };
+
+    // Track active tour instance
+    this.activeTour = null;
+    this.isTourActive = false;
+    this.lastHighlightedElement = null;
 
     // Initialize features
     this.accessibilityManager.initAccessibility();
     this.accessibilityManager.initKeyboardShortcuts();
     this.accessibilityManager.initTouchGestures();
     this.themeManager.initThemeToggle();
-    this.initTours();
+    this.initSimpleHelp();
 
     // Initialize state
     this.isExplanationShown = false;
     this.currentExplanation = null;
     this.animationInProgress = false;
     this.isPaused = false;
+  }
+
+  // Replace driver.js tour with simple help functionality
+  initSimpleHelp() {
+    // Bind help icon click to show simple help dialog
+    const helpIcon = document.getElementById('help-icon');
+    if (helpIcon) {
+      helpIcon.addEventListener('click', () => {
+        this.showSimpleHelp();
+      });
+    } else {
+      console.warn('Help icon not found in the DOM');
+    }
+  }
+
+  // Show a simple help dialog instead of driver.js tour
+  showSimpleHelp() {
+    const currentSection = this.getCurrentSection();
+    const helpContent = this.getHelpContentForSection(currentSection);
+    
+    // Display help content in a modal or notification
+    this.notificationManager.showToast(
+      `Help: ${helpContent.title}`, 
+      'info', 
+      5000
+    );
+    
+    // Optionally, show more detailed help in a custom modal
+    this.showHelpModal(helpContent);
+  }
+  
+  // Get the current visible section
+  getCurrentSection() {
+    const sections = ['quiz-container', 'interview-container', 'ebook-container'];
+    for (const id of sections) {
+      const element = document.getElementById(id);
+      if (element && !element.classList.contains('hidden')) {
+        return id;
+      }
+    }
+    return 'quiz-container'; // Default
+  }
+  
+  // Get help content based on current section
+  getHelpContentForSection(sectionId) {
+    switch (sectionId) {
+      case 'quiz-container':
+        return {
+          title: 'Quiz Section Help',
+          description: 'Select a topic and difficulty, then answer questions to test your knowledge.'
+        };
+      case 'interview-container':
+        return {
+          title: 'Interview Prep Help',
+          description: 'Browse topics and questions to prepare for your technical interviews.'
+        };
+      case 'ebook-container':
+        return {
+          title: 'eBook Section Help',
+          description: 'Browse and read technical eBooks to enhance your knowledge.'
+        };
+      default:
+        return {
+          title: 'Help',
+          description: 'Navigate through different sections using the tabs at the top.'
+        };
+    }
+  }
+  
+  // Show a modal with help content
+  showHelpModal(content) {
+    // Create a modal element if it doesn't exist
+    let helpModal = document.getElementById('help-modal');
+    if (!helpModal) {
+      helpModal = document.createElement('div');
+      helpModal.id = 'help-modal';
+      helpModal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden';
+      helpModal.setAttribute('role', 'dialog');
+      helpModal.setAttribute('aria-modal', 'true');
+      
+      // Create modal content
+      helpModal.innerHTML = `
+        <div class="bg-white mx-4 p-5 sm:p-8 rounded-2xl max-w-md w-full shadow-2xl animate-slide-up border border-gray-200">
+          <h3 id="help-title" class="text-lg sm:text-2xl font-bold mb-3 sm:mb-4 text-indigo-900"></h3>
+          <div id="help-description" class="text-gray-700 text-sm sm:text-base mb-5"></div>
+          <div class="flex justify-end">
+            <button id="help-close-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Got it</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(helpModal);
+      
+      // Add close button handler
+      document.getElementById('help-close-btn').addEventListener('click', () => {
+        helpModal.classList.add('hidden');
+      });
+    }
+    
+    // Update content and show modal
+    document.getElementById('help-title').textContent = content.title;
+    document.getElementById('help-description').textContent = content.description;
+    helpModal.classList.remove('hidden');
+  }
+
+  // Stub methods to maintain compatibility with existing code
+  startMainTour() {
+    this.showSimpleHelp();
+  }
+  
+  startQuizFeatureTour() {
+    this.showSimpleHelp();
+  }
+  
+  startInterviewFeatureTour() {
+    this.showSimpleHelp();
+  }
+  
+  startEbookFeatureTour() {
+    this.showSimpleHelp();
+  }
+  
+  cleanupActiveTour() {
+    // No need to do anything since we're not using driver.js
+    this.isTourActive = false;
+    this.activeTour = null;
+  }
+  
+  startSectionTour(sectionId) {
+    this.showSimpleHelp();
+  }
+  
+  startTour(steps) {
+    this.showSimpleHelp();
+  }
+  
+  showElementHelp(elementId) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    const helpInfo = this.getHelpInfoForElement(elementId);
+    
+    // Show tooltip for the element
+    this.notificationManager.showToast(
+      `${helpInfo.title}: ${helpInfo.description}`, 
+      'info', 
+      3000
+    );
   }
 
   // Initialize tour functionality
@@ -60,42 +215,122 @@ export default class UIManager {
     } else {
       console.warn('Help icon not found in the DOM');
     }
+
+    // Handle tab navigation to properly terminate tours
+    this.attachTabSwitchHandlers();
+  }
+
+  // Attach handlers to navigation tabs to clean up tours
+  attachTabSwitchHandlers() {
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // If a tour is active, end it gracefully
+        if (this.activeTour && this.isTourActive) {
+          this.cleanupActiveTour();
+
+          // If navigating away, set a flag to restart the tour after navigation
+          const targetSection = btn.getAttribute('aria-controls');
+          if (targetSection) {
+            // Wait for the UI to update before starting the new tour
+            setTimeout(() => {
+              this.startSectionTour(targetSection);
+            }, 500);
+          }
+        }
+      });
+    });
+  }
+
+  // Clean up any active tour
+  cleanupActiveTour() {
+    if (this.activeTour) {
+      // Properly destroy the tour
+      this.activeTour.destroy();
+      this.activeTour = null;
+      this.isTourActive = false;
+    }
+  }
+
+  // Start a tour for a specific section
+  startSectionTour(sectionId) {
+    let steps = [];
+
+    // Determine which steps to use based on the section
+    switch(sectionId) {
+      case 'quiz-container':
+        steps = this.getQuizSelectionTourSteps();
+        break;
+      case 'interview-container':
+        steps = this.getInterviewPrepTourSteps();
+        break;
+      case 'ebook-container':
+        steps = this.getEbookTourSteps();
+        break;
+      default:
+        steps = this.getApplicationOverviewSteps();
+    }
+
+    // Only start tour if we have steps
+    if (steps.length > 0) {
+      this.startTour(steps);
+    }
+  }
+
+  // Start a tour with the given steps
+  startTour(steps) {
+    // Clean up any existing tour first
+    this.cleanupActiveTour();
+
+    // Create and start a new tour
+    if (typeof driver !== 'undefined') {
+      this.activeTour = driver({
+        ...this.driverConfig,
+        steps
+      });
+
+      this.isTourActive = true;
+      this.activeTour.drive();
+    } else {
+      console.error('Driver.js is not loaded');
+    }
   }
 
   // Main application tour
   startMainTour() {
     // Get the appropriate steps based on current view
     const steps = this.getMainTourSteps();
-    // Create a new driver instance with steps and start it immediately
-    const driverObj = driver({
-      ...this.driverConfig,
-      steps,
-    });
-
-    // Start the tour
-    driverObj.drive();
+    this.startTour(steps);
   }
 
   // Get tour steps based on current view
   getMainTourSteps() {
-    const isQuizView = !this.baseUI.startScreen?.classList.contains('hidden');
-    const isQuestionView = !this.baseUI.questionScreen?.classList.contains('hidden');
-    const isResultView = !this.baseUI.resultScreen?.classList.contains('hidden');
-    const isInterviewView =
-      document.getElementById('interview-container')?.classList.contains('hidden') === false;
+    // Check which section is visible
+    const quizContainer = document.getElementById('quiz-container');
+    const interviewContainer = document.getElementById('interview-container');
+    const ebookContainer = document.getElementById('ebook-container');
+    const questionScreen = this.baseUI.questionScreen;
+    const resultScreen = this.baseUI.resultScreen;
 
+    // Determine the active view more reliably
+    const isQuizView = quizContainer && !quizContainer.classList.contains('hidden');
+    const isInterviewView = interviewContainer && !interviewContainer.classList.contains('hidden');
+    const isEbookView = ebookContainer && !ebookContainer.classList.contains('hidden');
+
+    // For quiz container, check which specific screen is active
     if (isQuizView) {
-      return this.getQuizSelectionTourSteps();
+      const isQuestionView = questionScreen && !questionScreen.classList.contains('hidden');
+      const isResultView = resultScreen && !resultScreen.classList.contains('hidden');
+      const isStartView = this.baseUI.startScreen && !this.baseUI.startScreen.classList.contains('hidden');
+
+      if (isQuestionView) return this.getQuestionScreenTourSteps();
+      if (isResultView) return this.getResultScreenTourSteps();
+      if (isStartView) return this.getQuizSelectionTourSteps();
     }
-    if (isQuestionView) {
-      return this.getQuestionScreenTourSteps();
-    }
-    if (isResultView) {
-      return this.getResultScreenTourSteps();
-    }
-    if (isInterviewView) {
-      return this.getInterviewPrepTourSteps();
-    }
+
+    if (isInterviewView) return this.getInterviewPrepTourSteps();
+    if (isEbookView) return this.getEbookTourSteps();
+
     // Default steps for the application overview
     return this.getApplicationOverviewSteps();
   }
@@ -333,30 +568,76 @@ export default class UIManager {
     ];
   }
 
+  // Steps for the eBook section
+  getEbookTourSteps() {
+    return [
+      {
+        element: '#ebook-container',
+        popover: {
+          title: 'eBook Library',
+          description: 'Browse and read interactive eBooks to help with your interview preparation.',
+          position: 'top',
+        },
+      },
+      {
+        element: '#ebook-library-tab',
+        popover: {
+          title: 'Library',
+          description: 'Browse all available eBooks in the library.',
+          position: 'bottom',
+        },
+      },
+      {
+        element: '#ebook-tab', 
+        popover: {
+          title: 'Reader',
+          description: 'Read the selected eBook with interactive features.',
+          position: 'bottom',
+        },
+      },
+      {
+        element: '#ebook-search-input',
+        popover: {
+          title: 'Search',
+          description: 'Search for specific content within the eBooks.',
+          position: 'right',
+        },
+      },
+      {
+        element: '#ebook-toc',
+        popover: {
+          title: 'Table of Contents',
+          description: 'Navigate through chapters and sections of the eBook.',
+          position: 'right',
+        },
+      },
+      {
+        element: '#nav-quiz',
+        popover: {
+          title: 'Back to Quiz',
+          description: 'Switch back to quiz mode to test your knowledge.',
+          position: 'bottom',
+        },
+      },
+    ];
+  }
+
   // Feature-specific tour for quiz functionality
   startQuizFeatureTour() {
     const steps = this.getQuizSelectionTourSteps();
-    // Create a new driver instance with steps and start it
-    const driverObj = driver({
-      ...this.driverConfig,
-      steps,
-    });
-
-    // Start the tour
-    driverObj.drive();
+    this.startTour(steps);
   }
 
   // Feature-specific tour for interview prep
   startInterviewFeatureTour() {
     const steps = this.getInterviewPrepTourSteps();
-    // Create a new driver instance with steps and start it
-    const driverObj = driver({
-      ...this.driverConfig,
-      steps,
-    });
+    this.startTour(steps);
+  }
 
-    // Start the tour
-    driverObj.drive();
+  // Feature-specific tour for eBook section
+  startEbookFeatureTour() {
+    const steps = this.getEbookTourSteps();
+    this.startTour(steps);
   }
 
   // Context-sensitive help for specific elements
@@ -368,11 +649,15 @@ export default class UIManager {
     // Get context-specific help text
     const helpInfo = this.getHelpInfoForElement(elementId);
 
+    // Clean up any existing tour
+    this.cleanupActiveTour();
+
     // Create a new driver instance for just this element
-    const driverObj = driver(this.driverConfig);
+    this.activeTour = driver(this.driverConfig);
+    this.isTourActive = true;
 
     // Highlight the element
-    driverObj.highlight({
+    this.activeTour.highlight({
       element: `#${elementId}`,
       popover: {
         title: helpInfo.title,

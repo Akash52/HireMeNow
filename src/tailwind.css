@@ -1248,13 +1248,13 @@ header h1 {
   transition: all 0.4s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-.ebook-library-card:hover .ebook-card-overlay {
+/* .ebook-library-card:hover .ebook-card-overlay {
   opacity: 1;
-}
+} */
 
-.ebook-card-overlay {
+/* .ebook-card-overlay {
   @apply absolute inset-0 bg-indigo-600/90 flex items-center justify-center opacity-0 transition-opacity duration-300;
-}
+} */
 
 /* Reading progress bar */
 .reading-progress-bar {

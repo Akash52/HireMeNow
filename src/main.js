@@ -6,6 +6,9 @@ import { EbookReader } from './ui/EbookReader.js';
 import { EbookManager } from './ui/EbookManager.js';
 import { Router } from './router/Router.js';
 import { PWAUpdateNotification } from './pwa/UpdateNotification.js';
+// Import the new tour management components
+import { TourManager } from './ui/TourManager.js';
+import { HelpButton } from './ui/HelpButton.js';
 
 /**
  * Simple logging function for use before DOM is loaded
@@ -41,8 +44,29 @@ const questionCache = new Map();
 document.addEventListener('DOMContentLoaded', async () => {
   // Initialize managers
   const uiManager = new UIManager();
+  
+  // Make uiManager globally accessible immediately
+  window.uiManager = uiManager;
+
+  // Initialize analytics and other managers
   const analyticsManager = new AnalyticsManager();
   const interviewManager = new InterviewManager(uiManager);
+  
+  // Wait a brief moment to ensure UIManager has fully initialized
+  setTimeout(() => {
+    // Initialize tour management AFTER UI Manager is ready
+    const tourManager = new TourManager(uiManager);
+    const helpButton = new HelpButton(tourManager);
+    
+    // Make tourManager globally accessible
+    window.tourManager = tourManager;
+    
+    // Initialize tour components
+    tourManager.init();
+    helpButton.init();
+    
+    console.log('Tour management initialized');
+  }, 100);
   
   // Initialize PWA update notification
   const pwaUpdateManager = new PWAUpdateNotification(uiManager);
@@ -255,17 +279,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (navQuizBtn && navInterviewBtn) {
       navQuizBtn.addEventListener('click', () => {
         if (isLoading) return;
+        // Cleanup any active tours via the UIManager before navigation
+        if (uiManager.isTourActive) {
+          uiManager.cleanupActiveTour();
+        }
         router.navigate('quiz');
       });
 
       navInterviewBtn.addEventListener('click', () => {
         if (isLoading) return;
+        // Cleanup any active tours via the UIManager before navigation
+        if (uiManager.isTourActive) {
+          uiManager.cleanupActiveTour();
+        }
         router.navigate('interview');
       });
       
       if (navEbookBtn) {
         navEbookBtn.addEventListener('click', () => {
           if (isLoading) return;
+          // Cleanup any active tours via the UIManager before navigation
+          if (uiManager.isTourActive) {
+            uiManager.cleanupActiveTour();
+          }
           router.navigate('ebook');
         });
       }
@@ -817,6 +853,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         type: params.type || selectedQuizType,
         difficulty: params.difficulty || selectedDifficulty
       });
+      
+      // Start a tour for this section if coming from another section
+      if (uiManager.lastRoute && uiManager.lastRoute !== 'quiz' && uiManager.isTourActive) {
+        setTimeout(() => uiManager.startQuizFeatureTour(), 500);
+      }
+      
+      // Remember current route
+      uiManager.lastRoute = 'quiz';
     })
     .register('interview', (params) => {
       // Show interview section
@@ -850,6 +894,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         from_route: true,
         topic: params.topic || null
       });
+      
+      // Start a tour for this section if coming from another section
+      if (uiManager.lastRoute && uiManager.lastRoute !== 'interview' && uiManager.isTourActive) {
+        setTimeout(() => uiManager.startInterviewFeatureTour(), 500);
+      }
+      
+      // Remember current route
+      uiManager.lastRoute = 'interview';
     })
     .register('ebook', (params) => {
       // Show ebook section if it exists
@@ -907,6 +959,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         from_route: true,
         book: params.book || null
       });
+      
+      // Start a tour for this section if coming from another section
+      if (uiManager.lastRoute && uiManager.lastRoute !== 'ebook' && uiManager.isTourActive) {
+        setTimeout(() => uiManager.startEbookFeatureTour(), 500);
+      }
+      
+      // Remember current route
+      uiManager.lastRoute = 'ebook';
     })
     .setDefault('quiz')
     .init();
