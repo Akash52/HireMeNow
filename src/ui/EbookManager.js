@@ -59,6 +59,13 @@ export class EbookManager {
     
     // Update UI with reading stats
     this.updateReadingStatsUI();
+
+    // Add Stackblitz SDK to allowed scripts (if using a Content Security Policy)
+    this.allowedScripts = this.allowedScripts || [];
+    this.allowedScripts.push('https://unpkg.com/@stackblitz/sdk/bundles/sdk.umd.js');
+    
+    // Ensure we preload Stackblitz SDK for faster loading
+    this.preloadStackblitz();
   }
 
   /**
@@ -85,6 +92,18 @@ export class EbookManager {
     }).catch(err => {
       console.error('Failed to load animation manager:', err);
     });
+  }
+
+  /**
+   * Preload the Stackblitz SDK
+   */
+  preloadStackblitz() {
+    // Add preload link
+    const preload = document.createElement('link');
+    preload.rel = 'preload';
+    preload.href = 'https://unpkg.com/@stackblitz/sdk/bundles/sdk.umd.js';
+    preload.as = 'script';
+    document.head.appendChild(preload);
   }
 
   /**
@@ -272,10 +291,17 @@ export class EbookManager {
    * @param {string} bookId - ID of the book to open
    */
   async openBook(bookId) {
+    // Prevent opening book if we're already in the process
+    if (this.isOpeningBook) return;
+    this.isOpeningBook = true;
+    
     // Show loading indicator
     this.uiManager.showToast('Loading ebook...', 'info');
     
     try {
+      // Stop current progress tracking if any
+      this.stopProgressTracking();
+      
       // Load the book
       const success = await this.ebookReader.loadBook(bookId);
       
@@ -302,12 +328,15 @@ export class EbookManager {
         
         // Update progress periodically
         this.startProgressTracking();
+        this.isOpeningBook = false;
       } else {
+        this.isOpeningBook = false;
         throw new Error('Failed to load book');
       }
     } catch (error) {
       console.error('Error opening book:', error);
       this.notificationManager.showToast('Failed to open book. Please try again.', 'error');
+      this.isOpeningBook = false;
       
       // Try with fallback content if available
       try {
@@ -319,7 +348,9 @@ export class EbookManager {
             if (ebookNavBtn) ebookNavBtn.click();
             
             const readerTab = document.getElementById('ebook-tab');
-            if (readerTab) readerTab.click();
+            if (readerTab) {
+              readerTab.click();
+            }
             
             this.startProgressTracking();
           }
@@ -328,17 +359,26 @@ export class EbookManager {
         console.error('Fallback book loading also failed:', fallbackError);
       }
     }
+
+    // Add a small delay to ensure Stackblitz SDK is loaded if needed
+    if (this.ebookReader && typeof this.ebookReader.loadStackblitzSDK === 'function') {
+      setTimeout(() => {
+        this.ebookReader.loadStackblitzSDK().catch(err => {
+          console.warn('Optional Stackblitz SDK preload failed:', err);
+        });
+      }, 1000);
+    }
   }
   
   /**
    * Start tracking reading progress
    */
   startProgressTracking() {
-    if (this._progressInterval) {
-      clearInterval(this._progressInterval);
-    }
+    // Clear any existing tracking
+    this.stopProgressTracking();
     
-    this._progressInterval = setInterval(() => {
+    // Set up new tracking interval
+    this.progressInterval = setInterval(() => {
       if (!this.ebookReader.currentBook) return;
       
       const progress = this.calculateCurrentProgress();
@@ -347,38 +387,36 @@ export class EbookManager {
       if (currentHeading) {
         this.updateUserProgress(progress, currentHeading.id);
       }
-    }, 30000); // Update every 30 seconds
+    }, 5000); // Update every 5 seconds
     
-    // Start reading session if not already started
-    if (!this.currentSession) {
-      this.startReadingSession();
-      
-      // Award first book achievement if this is their first time
-      this.checkAndAwardAchievement('first-book', 1);
-    }
+    // Start reading session
+    this.startReadingSession();
   }
   
   /**
    * Stop tracking reading progress
    */
   stopProgressTracking() {
-    if (this._progressInterval) {
-      clearInterval(this._progressInterval);
-      this._progressInterval = null;
-    }
-    
-    // Save final progress
-    if (this.ebookReader.currentBook) {
-      const progress = this.calculateCurrentProgress();
-      const currentHeading = this.ebookReader.getCurrentHeading();
+    if (this.progressInterval) {
+      clearInterval(this.progressInterval);
+      this.progressInterval = null;
       
-      if (currentHeading) {
-        this.updateUserProgress(progress, currentHeading.id);
+      // Save final progress before stopping
+      if (this.ebookReader.currentBook) {
+        const progress = this.calculateCurrentProgress();
+        const currentHeading = this.ebookReader.getCurrentHeading();
+        
+        if (currentHeading) {
+          this.updateUserProgress(progress, currentHeading.id);
+        }
       }
+      
+      // End reading session
+      this.endReadingSession();
     }
     
-    // End reading session
-    this.endReadingSession();
+    // Clean up any search results when leaving
+    this.clearSearchHighlights();
   }
   
   /**
@@ -400,84 +438,223 @@ export class EbookManager {
     const contentArea = document.getElementById('ebook-content');
     if (!contentArea) return;
     
-    // Remove existing highlights
-    contentArea.querySelectorAll('.search-highlight').forEach(el => {
-      const parent = el.parentNode;
-      parent.replaceChild(document.createTextNode(el.textContent), el);
-      parent.normalize();
-    });
+    // Clear previous search results
+    this.clearSearchHighlights();
     
     if (query.trim() === '') return;
     
     const searchResults = [];
     const textNodes = [];
     
-    // Get all text nodes
-    const walker = document.createTreeWalker(
-      contentArea,
-      NodeFilter.SHOW_TEXT,
-      {
-        acceptNode(node) {
-          return node.textContent.trim() !== ''
-            ? NodeFilter.FILTER_ACCEPT
-            : NodeFilter.FILTER_REJECT;
+    try {
+      // Get all text nodes
+      const walker = document.createTreeWalker(
+        contentArea,
+        NodeFilter.SHOW_TEXT,
+        {
+          acceptNode(node) {
+            return node.textContent.trim() !== ''
+              ? NodeFilter.FILTER_ACCEPT
+              : NodeFilter.FILTER_REJECT;
+          }
         }
+      );
+      
+      let node;
+      while ((node = walker.nextNode())) {
+        // Skip nodes that are already part of a highlight or code block
+        if (node.parentNode.closest('pre, code, .ebook-highlight, .search-highlight')) {
+          continue;
+        }
+        textNodes.push(node);
       }
-    );
-    
-    let node;
-    while ((node = walker.nextNode())) {
-      textNodes.push(node);
+      
+      // Search in text nodes
+      const regex = new RegExp(query, 'gi');
+      textNodes.forEach(textNode => {
+        const text = textNode.textContent;
+        let match;
+        let resultText = text;
+        let lastIndex = 0;
+        
+        while ((match = regex.exec(text)) !== null) {
+          // Found a match
+          searchResults.push({
+            text: match[0],
+            context: text.substring(Math.max(0, match.index - 30), Math.min(text.length, match.index + match[0].length + 30)),
+            node: textNode
+          });
+          
+          // Mark the text
+          const before = resultText.substring(0, match.index - lastIndex);
+          const matched = resultText.substring(match.index - lastIndex, match.index - lastIndex + match[0].length);
+          resultText = resultText.substring(match.index - lastIndex + match[0].length);
+          lastIndex = match.index + match[0].length;
+          
+          const span = document.createElement('span');
+          span.className = 'search-highlight';
+          span.dataset.originalText = matched;
+          span.textContent = matched;
+          
+          textNode.parentNode.insertBefore(document.createTextNode(before), textNode);
+          textNode.parentNode.insertBefore(span, textNode);
+        }
+        
+        if (searchResults.length > 0 && textNode.textContent.length > 0) {
+          // Handle the remaining text after the last match
+          if (resultText) {
+            textNode.parentNode.insertBefore(document.createTextNode(resultText), textNode);
+          }
+          textNode.parentNode.removeChild(textNode);
+        }
+      });
+      
+      // Show results count
+      if (searchResults.length > 0) {
+        this.notificationManager.showToast(`Found ${searchResults.length} matches`, 'success');
+        
+        // Scroll to first result
+        const firstResult = document.querySelector('.search-highlight');
+        if (firstResult) {
+          firstResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          
+          // Add special highlight to first result
+          firstResult.classList.add('current-search-result');
+        }
+        
+        // Add navigation buttons if more than one result
+        if (searchResults.length > 1) {
+          this.addSearchNavigation(searchResults.length);
+        }
+      } else {
+        this.notificationManager.showToast('No matches found', 'info');
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      this.notificationManager.showToast('Search failed. Please try again.', 'error');
+    }
+  }
+  
+  /**
+   * Clear search highlights from the document
+   */
+  clearSearchHighlights() {
+    // Remove search navigation if it exists
+    const navContainer = document.getElementById('search-navigation');
+    if (navContainer) {
+      navContainer.remove();
     }
     
-    // Search in text nodes
-    const regex = new RegExp(query, 'gi');
-    textNodes.forEach(textNode => {
-      const text = textNode.textContent;
-      let match;
-      let resultText = text;
-      let lastIndex = 0;
+    // Remove existing highlights
+    const contentArea = document.getElementById('ebook-content');
+    if (!contentArea) return;
+    
+    contentArea.querySelectorAll('.search-highlight').forEach(el => {
+      const parent = el.parentNode;
+      const originalText = el.dataset.originalText || el.textContent;
+      parent.replaceChild(document.createTextNode(originalText), el);
+      // Normalize to combine adjacent text nodes
+      parent.normalize();
+    });
+  }
+  
+  /**
+   * Add navigation controls for search results
+   * @param {number} resultCount - Number of search results
+   */
+  addSearchNavigation(resultCount) {
+    // Remove existing navigation if any
+    const existingNav = document.getElementById('search-navigation');
+    if (existingNav) {
+      existingNav.remove();
+    }
+    
+    // Create navigation container
+    const navContainer = document.createElement('div');
+    navContainer.id = 'search-navigation';
+    navContainer.className = 'fixed bottom-24 left-1/2 transform -translate-x-1/2 flex items-center space-x-3 bg-white/90 backdrop-blur-sm text-indigo-600 px-4 py-2 rounded-full shadow-lg z-40 transition-all duration-300';
+    
+    navContainer.innerHTML = `
+      <button id="prev-search-result" class="p-1 hover:bg-indigo-50 rounded-full" title="Previous result">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
+      </button>
+      <span id="search-result-counter" class="text-sm font-medium">1 of ${resultCount}</span>
+      <button id="next-search-result" class="p-1 hover:bg-indigo-50 rounded-full" title="Next result">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        </svg>
+      </button>
+      <button id="clear-search-results" class="ml-2 p-1 hover:bg-indigo-50 rounded-full" title="Clear search">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    `;
+    
+    document.body.appendChild(navContainer);
+    
+    let currentIndex = 0;
+    
+    // Add event listeners
+    document.getElementById('next-search-result').addEventListener('click', () => {
+      const highlights = document.querySelectorAll('.search-highlight');
+      if (highlights.length === 0) return;
       
-      while ((match = regex.exec(text)) !== null) {
-        // Found a match
-        searchResults.push({
-          text: match[0],
-          context: text.substring(Math.max(0, match.index - 30), Math.min(text.length, match.index + match[0].length + 30)),
-          node: textNode
-        });
-        
-        // Mark the text
-        const before = resultText.substring(0, match.index - lastIndex);
-        const matched = resultText.substring(match.index - lastIndex, match.index - lastIndex + match[0].length);
-        resultText = resultText.substring(match.index - lastIndex + match[0].length);
-        lastIndex = match.index + match[0].length;
-        
-        const span = document.createElement('span');
-        span.className = 'search-highlight';
-        span.textContent = matched;
-        
-        textNode.parentNode.insertBefore(document.createTextNode(before), textNode);
-        textNode.parentNode.insertBefore(span, textNode);
-      }
+      // Remove current highlight class
+      highlights[currentIndex].classList.remove('current-search-result');
       
-      if (searchResults.length > 0 && textNode.textContent.length > 0) {
-        textNode.parentNode.insertBefore(document.createTextNode(resultText), textNode);
-        textNode.parentNode.removeChild(textNode);
-      }
+      // Move to next result
+      currentIndex = (currentIndex + 1) % highlights.length;
+      
+      // Add highlight to new current result
+      highlights[currentIndex].classList.add('current-search-result');
+      
+      // Update counter
+      document.getElementById('search-result-counter').textContent = `${currentIndex + 1} of ${highlights.length}`;
+      
+      // Scroll to the result
+      highlights[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
     
-    // Show results count
-    if (searchResults.length > 0) {
-      this.notificationManager.showToast(`Found ${searchResults.length} matches`, 'success');
+    document.getElementById('prev-search-result').addEventListener('click', () => {
+      const highlights = document.querySelectorAll('.search-highlight');
+      if (highlights.length === 0) return;
       
-      // Scroll to first result
-      const firstResult = document.querySelector('.search-highlight');
-      if (firstResult) {
-        firstResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    } else {
-      this.notificationManager.showToast('No matches found', 'info');
-    }
+      // Remove current highlight class
+      highlights[currentIndex].classList.remove('current-search-result');
+      
+      // Move to previous result
+      currentIndex = (currentIndex - 1 + highlights.length) % highlights.length;
+      
+      // Add highlight to new current result
+      highlights[currentIndex].classList.add('current-search-result');
+      
+      // Update counter
+      document.getElementById('search-result-counter').textContent = `${currentIndex + 1} of ${highlights.length}`;
+      
+      // Scroll to the result
+      highlights[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    
+    document.getElementById('clear-search-results').addEventListener('click', () => {
+      this.clearSearchHighlights();
+    });
+    
+    // Auto-hide after some time
+    setTimeout(() => {
+      navContainer.classList.add('opacity-50');
+    }, 3000);
+    
+    // Show on hover
+    navContainer.addEventListener('mouseenter', () => {
+      navContainer.classList.remove('opacity-50');
+    });
+    
+    navContainer.addEventListener('mouseleave', () => {
+      navContainer.classList.add('opacity-50');
+    });
   }
   
   /**
@@ -498,20 +675,28 @@ export class EbookManager {
         return;
       }
       
-      // Activate focus mode
+      // Activate focus mode with transition
       container.classList.add('focus-mode');
       document.body.classList.add('dimmed-background');
+      
+      // Smoothly apply the dimming
+      document.body.style.transition = 'background-color 0.5s ease';
       
       // Track focus mode usage
       if (this.currentSession) {
         this.currentSession.focusModeActivations++;
       }
       
-      this.notificationManager.showToast('Focus mode activated', 'info');
+      this.notificationManager.showToast('Focus mode activated', 'success');
     } else {
-      // Deactivate focus mode
+      // Deactivate focus mode with transition
       container.classList.remove('focus-mode');
-      document.body.classList.remove('dimmed-background');
+      
+      // Use a timeout to make the transition smoother
+      setTimeout(() => {
+        document.body.classList.remove('dimmed-background');
+      }, 50);
+      
       this.notificationManager.showToast('Focus mode deactivated', 'info');
     }
   }
@@ -578,6 +763,32 @@ export class EbookManager {
       
       // End reading session
       this.endReadingSession();
+    });
+
+    // Clear search results when typing new search
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        if (searchInput.value.trim() === '') {
+          this.clearSearchHighlights();
+        }
+      });
+      
+      searchInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+          this.searchInBook(searchInput.value);
+        } else if (e.key === 'Escape') {
+          searchInput.value = '';
+          this.clearSearchHighlights();
+        }
+      });
+    }
+    
+    // Add window event listener for proper cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      this.stopProgressTracking();
+      if (this.ebookReader && this.ebookReader.cleanup) {
+        this.ebookReader.cleanup();
+      }
     });
   }
 

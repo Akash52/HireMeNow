@@ -201,6 +201,72 @@ export class AnimationManager {
   }
 
   /**
+   * Animate button click effect
+   * @param {HTMLElement} button - The button to animate
+   */
+  animateButton(button) {
+    if (!button) return;
+    
+    // Add ripple effect class
+    button.classList.add('animate-button-press');
+    
+    // Remove animation class after it completes
+    setTimeout(() => {
+      button.classList.remove('animate-button-press');
+    }, 300);
+  }
+
+  /**
+   * Fade in an element with animation
+   * @param {HTMLElement} element - The element to fade in
+   */
+  fadeIn(element) {
+    if (!element) return;
+    
+    // Remove any existing fade classes
+    element.classList.remove('animate-fade-out', 'hidden');
+    
+    // Add fade-in class
+    element.classList.add('animate-fade-in');
+    
+    // Make element visible
+    element.classList.remove('hidden');
+  }
+
+  /**
+   * Fade out an element with animation
+   * @param {HTMLElement} element - The element to fade out
+   */
+  fadeOut(element) {
+    if (!element) return;
+    
+    // Remove any existing fade classes
+    element.classList.remove('animate-fade-in');
+    
+    // Add fade-out class
+    element.classList.add('animate-fade-out');
+    
+    // Hide element after animation completes
+    setTimeout(() => {
+      element.classList.add('hidden');
+      element.classList.remove('animate-fade-out');
+    }, 300); // Match the animation duration in CSS (0.3s)
+  }
+
+  /**
+   * Animate progress bar
+   * @param {HTMLElement} element - The progress bar element
+   * @param {number} currentWidth - Current width percentage
+   * @param {number} targetWidth - Target width percentage
+   */
+  animateProgressBar(element, currentWidth, targetWidth) {
+    if (!element) return;
+    
+    // Set the new width with CSS transition handling the animation
+    element.style.width = `${targetWidth}%`;
+  }
+
+  /**
    * Add to the observer list for new sections
    * @param {HTMLElement} element - The element to observe
    */
@@ -208,6 +274,45 @@ export class AnimationManager {
     if (this.intersectionObserver && element) {
       this.intersectionObserver.observe(element);
     }
+  }
+
+  /**
+   * Show confetti animation for celebrations
+   */
+  showConfetti() {
+    // Simple confetti effect
+    const confettiColors = ['#4F46E5', '#818CF8', '#6366F1', '#4338CA', '#A5B4FC'];
+    const confettiCount = 100;
+    const container = document.createElement('div');
+    container.className = 'fixed inset-0 pointer-events-none z-50';
+    document.body.appendChild(container);
+    
+    // Create confetti particles
+    for (let i = 0; i < confettiCount; i++) {
+      const confetti = document.createElement('div');
+      confetti.className = 'absolute';
+      confetti.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+      confetti.style.width = `${Math.random() * 10 + 5}px`;
+      confetti.style.height = `${Math.random() * 10 + 5}px`;
+      confetti.style.top = '-20px';
+      confetti.style.left = `${Math.random() * 100}%`;
+      confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+      confetti.style.opacity = Math.random() + 0.5;
+      confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+      
+      // Add animation
+      confetti.style.animation = `confetti-fall ${Math.random() * 2 + 2}s linear forwards`;
+      
+      // Add to container
+      container.appendChild(confetti);
+    }
+    
+    // Remove container after animations complete
+    setTimeout(() => {
+      if (document.body.contains(container)) {
+        document.body.removeChild(container);
+      }
+    }, 4000);
   }
 
   /**

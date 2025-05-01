@@ -44,6 +44,7 @@ export class EbookReader {
         accentColor: 'blue'
       }
     };
+    this.isLoading = false; // Add loading state tracker
   }
 
   /**
@@ -63,11 +64,27 @@ export class EbookReader {
    * Load an eBook by its ID
    * @param {string} bookId - ID of the book to load
    */
-  async loadBook(bookId) {
+  async loadBook(bookId, useFallback = false) {
+    // Prevent duplicate loading
+    if (this.isLoading) {
+      return false;
+    }
+    
+    // If the same book is already loaded, just return true
+    if (this.currentBook && this.currentBook.id === bookId) {
+      return true;
+    }
+    
+    this.isLoading = true;
+    
     try {
       // Currently we only support JSEbook
       if (bookId === 'js-prototypes') {
         try {
+          if (useFallback) {
+            throw new Error('Using fallback content directly');
+          }
+          
           // Try remote URL first
           const response = await fetch('https://raw.githubusercontent.com/Akash52/HireMeNow/main/src/questions/ebook/JSEbook.md');
           
@@ -94,6 +111,7 @@ export class EbookReader {
         
         this.displayBook();
         this.notificationManager.showToast('eBook loaded successfully', 'success');
+        this.isLoading = false;
         return true;
       } else {
         throw new Error('Book not found');
@@ -101,6 +119,7 @@ export class EbookReader {
     } catch (error) {
       console.error('Error loading book:', error);
       this.notificationManager.showToast('Failed to load eBook', 'error');
+      this.isLoading = false;
       return false;
     }
   }
@@ -120,7 +139,7 @@ JavaScript is a prototype-based language, which means that objects inherit prope
 
 In JavaScript, every object has a prototype property, which is a reference to another object. When a property is accessed on an object and if the property is not found on that object, JavaScript looks at the object's prototype, and if not found there, it looks at the prototype's prototype, and so on until it either finds the property or reaches an object with a null prototype.
 
-\`\`\`javascript
+\`\`\`javascript stackblitz
 // Creating an object
 const person = {
   name: 'John',
@@ -132,6 +151,11 @@ const person = {
 
 // person.__proto__ is the prototype of the person object
 console.log(person.__proto__ === Object.prototype); // true
+
+// Try running this code!
+const element = document.createElement('div');
+element.textContent = person.greet();
+document.body.appendChild(element);
 \`\`\`
 
 ## Prototypal Inheritance
@@ -142,7 +166,7 @@ Inheritance in JavaScript is achieved through the prototype chain. A prototype c
 
 When you try to access a property of an object, JavaScript first looks at the object itself. If it can't find the property there, it looks at the object's prototype, and so on up the prototype chain.
 
-\`\`\`javascript
+\`\`\`javascript stackblitz
 // Parent constructor function
 function Animal(name) {
   this.name = name;
@@ -175,6 +199,15 @@ const dog = new Dog('Rex', 'German Shepherd');
 console.log(animal.speak()); // "Generic Animal makes a noise."
 console.log(dog.speak());    // "Rex barks."
 console.log(dog.breed);      // "German Shepherd"
+
+// Display results on page
+const output = document.createElement('div');
+output.innerHTML = \`
+  <p>\${animal.speak()}</p>
+  <p>\${dog.speak()}</p>
+  <p>Breed: \${dog.breed}</p>
+\`;
+document.body.appendChild(output);
 \`\`\`
 
 ## The Prototype Chain
@@ -203,7 +236,7 @@ ES6 introduced class syntax to JavaScript, but it's important to understand that
 
 ### Classes vs Prototypes
 
-\`\`\`javascript
+\`\`\`javascript stackblitz
 // ES6 Class syntax
 class Animal {
   constructor(name) {
@@ -227,6 +260,19 @@ class Dog extends Animal {
 }
 
 // The above is equivalent to the prototype example earlier
+// Create instances
+const animal = new Animal('Generic Animal');
+const dog = new Dog('Rex', 'German Shepherd');
+
+// Display results
+const results = document.createElement('div');
+results.innerHTML = \`
+  <h3>Class-based examples:</h3>
+  <p>\${animal.speak()}</p>
+  <p>\${dog.speak()}</p>
+  <p>Dog breed: \${dog.breed}</p>
+\`;
+document.body.appendChild(results);
 \`\`\`
 
 ## Performance Considerations
@@ -647,6 +693,7 @@ Remember that JavaScript's prototype system is different from classical inherita
     // First pass: extract TOC
     const lines = markdown.split('\n');
     let inCodeBlock = false;
+    let currentCodeBlock = null;  // Initialize currentCodeBlock
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -674,6 +721,7 @@ Remember that JavaScript's prototype system is different from classical inherita
     inCodeBlock = false;
     let insideSection = false;
     let currentChapter = null;
+    currentCodeBlock = null;  // Reset currentCodeBlock
     
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i];
@@ -681,6 +729,35 @@ Remember that JavaScript's prototype system is different from classical inherita
       // Handle code blocks
       if (line.startsWith('```')) {
         inCodeBlock = !inCodeBlock;
+        
+        // Check for Stackblitz marker in opening code block
+        if (inCodeBlock && line.includes('stackblitz')) {
+          // Extract Stackblitz ID or configuration if present
+          const stackblitzConfig = line.replace('```stackblitz', '').trim();
+          enhancedContent += `<div class="stackblitz-container" data-config="${this.escapeHtml(stackblitzConfig)}">`;
+          enhancedContent += '<div class="code-content">';
+          enhancedContent += line + '\n';
+          currentCodeBlock = { isStackblitz: true, content: '' };
+        } else {
+          enhancedContent += line + '\n';
+        }
+        
+        // Handle closing of a Stackblitz code block
+        if (!inCodeBlock && currentCodeBlock && currentCodeBlock.isStackblitz) {
+          enhancedContent += '</div>'; // Close code-content div
+          enhancedContent += '<div class="stackblitz-runner-container hidden"></div>';
+          enhancedContent += '<button class="run-in-stackblitz-btn">Run Code</button>';
+          enhancedContent += '</div>'; // Close stackblitz-container div
+          currentCodeBlock = null;
+        }
+        continue;
+      }
+      
+      // Track if we're in a Stackblitz block
+      if (inCodeBlock) {
+        if (currentCodeBlock && currentCodeBlock.isStackblitz) {
+          currentCodeBlock.content += line + '\n';
+        }
         enhancedContent += line + '\n';
         continue;
       }
@@ -721,121 +798,412 @@ Remember that JavaScript's prototype system is different from classical inherita
    * @returns {string} - HTML content
    */
   markdownToHtml(markdown) {
+    // Basic markdown to HTML conversion
     let html = markdown;
     
-    // Convert code blocks with Vite-style copy button functionality
-    html = html.replace(/```([\w-]+)?\n([\s\S]*?)\n```/g, (match, language, code) => {
-      const lang = language || 'javascript';
-      const escapedCode = this.escapeHtml(code.trim());
-      const uniqueId = 'code-' + Math.random().toString(36).substring(2, 15);
+    // Process code blocks with Stackblitz support
+    html = html.replace(/```([a-zA-Z]*)(.*?)\n([\s\S]*?)```/g, (match, lang, extra, code) => {
+      // Check if this should be a stackblitz block (allow both ```javascript and ```js stackblitz)
+      const isStackblitz = extra && extra.trim().includes('stackblitz');
+      const escapedCode = this.escapeHtml(code);
+      const uniqueId = `code-${Math.random().toString(36).substring(2, 9)}`;
       
-      return `
-        <div class="vite-code-block group mb-6">
-          <div class="vite-code-header">
-            <div class="vite-code-dots">
-              <div class="vite-code-dot"></div>
-              <div class="vite-code-dot"></div>
-              <div class="vite-code-dot"></div>
+      // Normalize language
+      let language = lang || '';
+      if (language === 'js') language = 'javascript';
+      if (!language && isStackblitz) language = 'javascript';
+      
+      if (isStackblitz) {
+        return `
+          <div class="stackblitz-container" data-lang="${language}">
+            <div class="code-header bg-gray-800 text-white text-xs py-1.5 px-3 flex justify-between items-center">
+              <span>${language}</span>
+              <div class="flex">
+                <button class="copy-code-btn text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded transition-colors mr-2" data-clipboard-target="#${uniqueId}">
+                  <i class="far fa-copy mr-1"></i> Copy
+                </button>
+                <button class="run-in-stackblitz-btn text-xs px-2 py-1 bg-indigo-600 hover:bg-indigo-700 rounded transition-colors">
+                  <i class="fas fa-play mr-1"></i> Run
+                </button>
+              </div>
             </div>
-            <div class="flex items-center">
-              <span class="mr-3">${lang}</span>
-              <button class="copy-code-btn opacity-0 group-hover:opacity-100 transition-opacity duration-200" data-clipboard-target="#${uniqueId}" aria-label="Copy code">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
-                </svg>
-              </button>
+            <div class="vite-scrollbar overflow-auto max-h-[500px] p-4 bg-gray-900">
+              <pre class="m-0"><code id="${uniqueId}" class="language-${language}" data-stackblitz="true">${escapedCode}</code></pre>
             </div>
+            <div class="stackblitz-runner-container hidden"></div>
           </div>
-          <div class="vite-scrollbar overflow-auto max-h-[500px] p-4">
-            <pre class="m-0"><code id="${uniqueId}" class="language-${lang}">${escapedCode}</code></pre>
+        `;
+      }
+      
+      // Regular code block (non-Stackblitz)
+      return `
+        <div class="code-block-container">
+          <div class="code-header bg-gray-800 text-white text-xs py-1.5 px-3 flex justify-between items-center">
+            <span>${lang || ''}</span>
+            <button class="copy-code-btn text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded transition-colors" data-clipboard-target="#${uniqueId}">
+              <i class="far fa-copy mr-1"></i> Copy
+            </button>
+          </div>
+          <div class="vite-scrollbar overflow-auto max-h-[500px] p-4 bg-gray-900">
+            <pre class="m-0"><code id="${uniqueId}" class="language-${lang || ''}">${escapedCode}</code></pre>
           </div>
         </div>
       `;
     });
     
+    // Continue with the rest of the conversion
     // Convert inline code
     html = html.replace(/`([^`]+)`/g, '<code class="inline-code bg-gray-100 text-indigo-600 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>');
     
-    // Continue with the rest of the conversion
-    // Convert headers (not handled by our section approach)
-    html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
-    html = html.replace(/^##### (.+)$/gm, '<h5>$1</h5>');
-    html = html.replace(/^###### (.+)$/gm, '<h6>$1</h6>');
+    // Convert links
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-indigo-600 hover:text-indigo-800 hover:underline">$1</a>');
     
     // Convert bold text
     html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     
     // Convert italic text
     html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-    html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
     
-    // Convert blockquotes
-    html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+    // Convert lists
+    html = html.replace(/^\s*-\s+(.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>\n)+/g, '<ul>$&</ul>');
     
-    // Convert horizontal rules
-    html = html.replace(/^---$/gm, '<hr>');
-    
-    // Convert unordered lists
-    html = html.replace(/^\* (.+)$/gm, '<ul><li>$1</li></ul>');
-    html = html.replace(/^- (.+)$/gm, '<ul><li>$1</li></ul>');
-    // Combine adjacent list items
-    html = html.replace(/<\/ul>\n<ul>/g, '');
-    
-    // Convert ordered lists
-    html = html.replace(/^\d+\. (.+)$/gm, '<ol><li>$1</li></ol>');
-    // Combine adjacent ordered list items
-    html = html.replace(/<\/ol>\n<ol>/g, '');
-    
-    // Convert paragraphs (lines that are not part of other elements)
-    html = html.replace(/^(?!(<h[1-6]|<ul|<ol|<blockquote|<hr|<pre|<div|<p))(.+)$/gm, '<p>$2</p>');
-    
-    // Fix empty lines
-    html = html.replace(/<p><\/p>/g, '');
-    
-    // Convert links
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 underline">$1</a>');
-    
-    // Convert images with alt text and title
-    html = html.replace(/!\[([^\]]+)\]\(([^)]+)(?:\s"([^"]+)")?\)/g, (match, alt, src, title) => {
-      const titleAttr = title ? ` title="${title}"` : '';
-      return `<figure class="my-4">
-        <img src="${src}" alt="${alt}" ${titleAttr} class="rounded-lg max-w-full mx-auto shadow-md" />
-        ${alt ? `<figcaption class="text-center text-sm text-gray-600 mt-2">${alt}</figcaption>` : ''}
-      </figure>`;
+    // Convert numbered lists
+    html = html.replace(/^\s*\d+\.\s+(.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>\n)+/g, match => {
+      // Only convert to <ol> if not already wrapped in <ul>
+      if (!match.startsWith('<ul>')) {
+        return '<ol>' + match + '</ol>';
+      }
+      return match;
     });
     
-    // Return the HTML
+    // Convert paragraphs (lines that are not headings, lists, or code blocks)
+    html = html.replace(/^([^<#\s][^\n]+)(?:\n|$)/gm, '<p>$1</p>');
+    
     return html;
   }
-  
+
   /**
-   * Escape HTML special characters
-   * @param {string} html - Raw HTML
-   * @returns {string} - Escaped HTML
+   * Apply syntax highlighting to code blocks
    */
-  escapeHtml(html) {
-    const entityMap = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
-    };
-    
-    return html.replace(/[&<>"']/g, s => entityMap[s]);
+  applySyntaxHighlighting() {
+    if (window.hljs) {
+      document.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block);
+      });
+      
+      // Initialize clipboard for code blocks
+      this.initializeClipboard();
+      
+      // Initialize Stackblitz runners
+      this.initializeStackblitzRunners();
+    }
   }
-  
+
   /**
-   * Convert string to URL-friendly slug
-   * @param {string} text - Text to slugify
-   * @returns {string} - Slugified text
+   * Initialize clipboard functionality for code blocks
    */
-  slugify(text) {
-    return text
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/[\s_-]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+  initializeClipboard() {
+    document.querySelectorAll('.copy-code-btn').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const targetId = e.target.closest('.copy-code-btn').getAttribute('data-clipboard-target');
+        const codeBlock = document.querySelector(targetId);
+        
+        if (codeBlock) {
+          const textToCopy = codeBlock.textContent;
+          
+          // Use modern clipboard API
+          navigator.clipboard.writeText(textToCopy)
+            .then(() => {
+              // Show success message
+              const originalText = e.target.innerHTML;
+              e.target.innerHTML = '<i class="fas fa-check mr-1"></i> Copied!';
+              setTimeout(() => {
+                e.target.innerHTML = originalText;
+              }, 2000);
+            })
+            .catch(err => {
+              console.error('Failed to copy text: ', err);
+              this.notificationManager.showToast('Failed to copy code', 'error');
+            });
+        }
+      });
+    });
+  }
+
+  /**
+   * Initialize Stackblitz integration for code runners
+   */
+  initializeStackblitzRunners() {
+    // Add inline icons for Font Awesome if needed
+    const iconStyle = document.createElement('style');
+    iconStyle.textContent = `
+      .run-in-stackblitz-btn:before {
+        content: "▶";
+        margin-right: 4px;
+      }
+      .copy-code-btn:before {
+        content: "📋";
+        margin-right: 4px;
+      }
+    `;
+    document.head.appendChild(iconStyle);
+
+    // Find all run buttons and attach event listeners
+    const runButtons = document.querySelectorAll('.run-in-stackblitz-btn');
+    console.log(`Found ${runButtons.length} Stackblitz run buttons`);
+    
+    runButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        const container = e.target.closest('.stackblitz-container');
+        if (!container) return;
+        
+        const codeElement = container.querySelector('code');
+        const runnerContainer = container.querySelector('.stackblitz-runner-container');
+        if (!codeElement || !runnerContainer) return;
+        
+        // Toggle runner visibility
+        if (runnerContainer.classList.contains('hidden')) {
+          // Extract code and language
+          const code = codeElement.textContent;
+          const lang = container.getAttribute('data-lang') || 'javascript';
+          
+          // Show loading state
+          runnerContainer.classList.remove('hidden');
+          runnerContainer.innerHTML = `
+            <div class="flex items-center justify-center p-4">
+              <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+              <span class="ml-2 text-indigo-600">Loading code runner...</span>
+            </div>
+          `;
+          
+          // First, load the SDK if it's not already loaded
+          this.loadStackblitzSDK()
+            .then(() => {
+              // Then create Stackblitz VM
+              this.createStackblitzProject(code, lang, runnerContainer);
+            })
+            .catch(err => {
+              console.error('Error loading Stackblitz SDK:', err);
+              runnerContainer.innerHTML = '<div class="p-4 text-red-500">Failed to load code runner</div>';
+            });
+          
+          // Update button text
+          button.textContent = 'Close Runner';
+        } else {
+          // Hide runner
+          runnerContainer.classList.add('hidden');
+          runnerContainer.innerHTML = '';
+          button.innerHTML = '<i class="fas fa-play mr-1"></i> Run';
+          button.textContent = 'Run Code';
+        }
+      });
+    });
+  }
+
+  /**
+   * Load the Stackblitz SDK
+   * @returns {Promise} - Resolves when SDK is loaded
+   */
+  loadStackblitzSDK() {
+    return new Promise((resolve, reject) => {
+      // Check if already loaded
+      if (window.StackBlitzSDK) {
+        resolve(window.StackBlitzSDK);
+        return;
+      }
+      
+      // Load SDK script
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/@stackblitz/sdk/bundles/sdk.umd.js';
+      script.async = true;
+      script.onload = () => resolve(window.StackBlitzSDK);
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  /**
+   * Create and embed a Stackblitz project
+   * @param {string} code - Code to run
+   * @param {string} language - Programming language
+   * @param {HTMLElement} container - Container element to embed in
+   */
+  createStackblitzProject(code, language, container) {
+    try {
+      // Determine file structure based on language
+      let files = {};
+      let dependencies = {};
+      let title = 'HireMeNow Code Runner';
+      
+      switch (language) {
+        case 'javascript':
+        case 'js':
+          files = {
+            'index.js': code,
+            'index.html': `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>JavaScript Runner</title>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="index.js"></script>
+  </body>
+  </html>`,
+          };
+          break;
+          
+        case 'typescript':
+        case 'ts':
+          files = {
+            'index.ts': code,
+            'index.html': `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>TypeScript Runner</title>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="index.ts"></script>
+  </body>
+  </html>`,
+          };
+          dependencies = {
+            'typescript': '^4.9.5'
+          };
+          break;
+          
+        case 'react':
+        case 'jsx':
+          files = {
+            'index.js': `
+  import React from 'react';
+  import ReactDOM from 'react-dom';
+  import App from './App';
+
+  ReactDOM.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+    document.getElementById('root')
+  );`,
+            'App.jsx': code,
+            'index.html': `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>React Runner</title>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+  </html>`,
+          };
+          dependencies = {
+            'react': '^17.0.2',
+            'react-dom': '^17.0.2'
+          };
+          break;
+          
+        default:
+          files = {
+            [`index.${language || 'js'}`]: code,
+            'index.html': `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>Code Runner</title>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="index.${language || 'js'}"></script>
+  </body>
+  </html>`,
+          };
+      }
+      
+      // Create project configuration
+      const project = {
+        title,
+        description: 'Code example from HireMeNow',
+        template: language === 'typescript' || language === 'ts' ? 'typescript' : 'javascript',
+        files,
+        dependencies
+      };
+      
+      // Check if StackBlitzSDK is loaded
+      if (!window.StackBlitzSDK) {
+        throw new Error('StackBlitzSDK not loaded');
+      }
+      
+      // Embed the project
+      window.StackBlitzSDK.embedProject(
+        container,
+        project,
+        {
+          height: 400,
+          openFile: Object.keys(files)[0],
+          terminalHeight: 50,
+          hideNavigation: false,
+          hideDevTools: false,
+          forceEmbedLayout: true,
+          view: 'editor'
+        }
+      );
+    } catch (error) {
+      console.error('Error creating Stackblitz project:', error);
+      
+      // Show error in container
+      container.innerHTML = `
+        <div class="p-4 text-red-500">
+          <p class="font-bold mb-2">Failed to create code runner</p>
+          <p>${error.message || 'Unknown error'}</p>
+          <p class="mt-4 text-sm text-gray-500">Please try again later</p>
+        </div>
+      `;
+      
+      // Show toast if notification manager is available
+      if (this.notificationManager) {
+        this.notificationManager.showToast('Error initializing code runner: ' + (error.message || 'Unknown error'), 'error');
+      }
+    }
+  }
+
+  /**
+   * Get path to element for serialization
+   * @param {HTMLElement} element - Element to get path for
+   * @returns {Array} - Path to element
+   */
+  getElementPath(element) {
+    const path = [];
+    let current = element;
+    
+    while (current && current !== document.getElementById('ebook-content')) {
+      let index = 0;
+      let sibling = current;
+      
+      while (sibling) {
+        if (sibling.nodeName === current.nodeName) index++;
+        sibling = sibling.previousElementSibling;
+      }
+      
+      path.unshift({
+        tag: current.nodeName.toLowerCase(),
+        index
+      });
+      
+      current = current.parentElement;
+    }
+    
+    return path;
   }
   
   /**
@@ -911,6 +1279,9 @@ Remember that JavaScript's prototype system is different from classical inherita
       
       // Initialize clipboard for code blocks
       this.initializeClipboard();
+      
+      // Initialize Stackblitz runners
+      this.initializeStackblitzRunners();
     }
   }
   
@@ -985,17 +1356,271 @@ Remember that JavaScript's prototype system is different from classical inherita
   }
   
   /**
+   * Initialize Stackblitz integration for code runners
+   */
+  initializeStackblitzRunners() {
+    // Add inline icons for Font Awesome if needed
+    const iconStyle = document.createElement('style');
+    iconStyle.textContent = `
+      .run-in-stackblitz-btn:before {
+        content: "▶";
+        margin-right: 4px;
+      }
+      .copy-code-btn:before {
+        content: "📋";
+        margin-right: 4px;
+      }
+    `;
+    document.head.appendChild(iconStyle);
+
+    // Find all run buttons and attach event listeners
+    const runButtons = document.querySelectorAll('.run-in-stackblitz-btn');
+    console.log(`Found ${runButtons.length} Stackblitz run buttons`);
+    
+    runButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        const container = e.target.closest('.stackblitz-container');
+        if (!container) return;
+        
+        const codeElement = container.querySelector('code');
+        const runnerContainer = container.querySelector('.stackblitz-runner-container');
+        if (!codeElement || !runnerContainer) return;
+        
+        // Toggle runner visibility
+        if (runnerContainer.classList.contains('hidden')) {
+          // Extract code and language
+          const code = codeElement.textContent;
+          const lang = container.getAttribute('data-lang') || 'javascript';
+          
+          // Show loading state
+          runnerContainer.classList.remove('hidden');
+          runnerContainer.innerHTML = `
+            <div class="flex items-center justify-center p-4">
+              <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+              <span class="ml-2 text-indigo-600">Loading code runner...</span>
+            </div>
+          `;
+          
+          // First, load the SDK if it's not already loaded
+          this.loadStackblitzSDK()
+            .then(() => {
+              // Then create Stackblitz VM
+              this.createStackblitzProject(code, lang, runnerContainer);
+            })
+            .catch(err => {
+              console.error('Error loading Stackblitz SDK:', err);
+              runnerContainer.innerHTML = '<div class="p-4 text-red-500">Failed to load code runner</div>';
+            });
+          
+          // Update button text
+          button.textContent = 'Close Runner';
+        } else {
+          // Hide runner
+          runnerContainer.classList.add('hidden');
+          runnerContainer.innerHTML = '';
+          button.innerHTML = '<i class="fas fa-play mr-1"></i> Run';
+          button.textContent = 'Run Code';
+        }
+      });
+    });
+  }
+
+  /**
+   * Load the Stackblitz SDK
+   * @returns {Promise} - Resolves when SDK is loaded
+   */
+  loadStackblitzSDK() {
+    return new Promise((resolve, reject) => {
+      // Check if already loaded
+      if (window.StackBlitzSDK) {
+        resolve(window.StackBlitzSDK);
+        return;
+      }
+      
+      // Load SDK script
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/@stackblitz/sdk/bundles/sdk.umd.js';
+      script.async = true;
+      script.onload = () => resolve(window.StackBlitzSDK);
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  /**
+   * Create and embed a Stackblitz project
+   * @param {string} code - Code to run
+   * @param {string} language - Programming language
+   * @param {HTMLElement} container - Container element to embed in
+   */
+  createStackblitzProject(code, language, container) {
+    try {
+      // Determine file structure based on language
+      let files = {};
+      let dependencies = {};
+      let title = 'HireMeNow Code Runner';
+      
+      switch (language) {
+        case 'javascript':
+        case 'js':
+          files = {
+            'index.js': code,
+            'index.html': `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>JavaScript Runner</title>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="index.js"></script>
+  </body>
+  </html>`,
+          };
+          break;
+          
+        case 'typescript':
+        case 'ts':
+          files = {
+            'index.ts': code,
+            'index.html': `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>TypeScript Runner</title>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="index.ts"></script>
+  </body>
+  </html>`,
+          };
+          dependencies = {
+            'typescript': '^4.9.5'
+          };
+          break;
+          
+        case 'react':
+        case 'jsx':
+          files = {
+            'index.js': `
+  import React from 'react';
+  import ReactDOM from 'react-dom';
+  import App from './App';
+
+  ReactDOM.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+    document.getElementById('root')
+  );`,
+            'App.jsx': code,
+            'index.html': `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>React Runner</title>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+  </html>`,
+          };
+          dependencies = {
+            'react': '^17.0.2',
+            'react-dom': '^17.0.2'
+          };
+          break;
+          
+        default:
+          files = {
+            [`index.${language || 'js'}`]: code,
+            'index.html': `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>Code Runner</title>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="index.${language || 'js'}"></script>
+  </body>
+  </html>`,
+          };
+      }
+      
+      // Create project configuration
+      const project = {
+        title,
+        description: 'Code example from HireMeNow',
+        template: language === 'typescript' || language === 'ts' ? 'typescript' : 'javascript',
+        files,
+        dependencies
+      };
+      
+      // Check if StackBlitzSDK is loaded
+      if (!window.StackBlitzSDK) {
+        throw new Error('StackBlitzSDK not loaded');
+      }
+      
+      // Embed the project
+      window.StackBlitzSDK.embedProject(
+        container,
+        project,
+        {
+          height: 400,
+          openFile: Object.keys(files)[0],
+          terminalHeight: 50,
+          hideNavigation: false,
+          hideDevTools: false,
+          forceEmbedLayout: true,
+          view: 'editor'
+        }
+      );
+    } catch (error) {
+      console.error('Error creating Stackblitz project:', error);
+      
+      // Show error in container
+      container.innerHTML = `
+        <div class="p-4 text-red-500">
+          <p class="font-bold mb-2">Failed to create code runner</p>
+          <p>${error.message || 'Unknown error'}</p>
+          <p class="mt-4 text-sm text-gray-500">Please try again later</p>
+        </div>
+      `;
+      
+      // Show toast if notification manager is available
+      if (this.notificationManager) {
+        this.notificationManager.showToast('Error initializing code runner: ' + (error.message || 'Unknown error'), 'error');
+      }
+    }
+  }
+
+  /**
    * Navigate to a specific section
    * @param {string} sectionId - ID of the section to navigate to
    */
   navigateToSection(sectionId) {
     const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
-      this.saveScrollPosition();
+    if (!section) return;
+    
+    // Scroll to the section
+    const contentArea = document.getElementById('ebook-content');
+    if (contentArea) {
+      contentArea.scrollTop = section.offsetTop - 20;
+    }
+    
+    // Update active TOC item
+    const tocItem = document.querySelector(`.toc-link[href="#${sectionId}"]`);
+    if (tocItem) {
+      this.highlightCurrentTocItem(tocItem);
     }
   }
-  
+
   /**
    * Toggle bookmark for current position
    */
@@ -1030,25 +1655,41 @@ Remember that JavaScript's prototype system is different from classical inherita
    * @returns {Object|null} - Current heading or null
    */
   getCurrentHeading() {
+    const contentArea = document.getElementById('ebook-content');
+    if (!contentArea) return null;
+    
     const headings = Array.from(document.querySelectorAll('#ebook-content h1, #ebook-content h2, #ebook-content h3'));
     if (!headings.length) return null;
     
-    const scrollPosition = document.getElementById('ebook-content').scrollTop;
+    const scrollPosition = contentArea.scrollTop;
+    const containerHeight = contentArea.clientHeight;
     let currentHeading = null;
     
-    for (const heading of headings) {
-      if (heading.offsetTop <= scrollPosition + 100) {
+    // Find the heading that's currently in the viewport or just above it
+    for (let i = 0; i < headings.length; i++) {
+      const heading = headings[i];
+      const headingPosition = heading.offsetTop - contentArea.offsetTop;
+      
+      // If the heading is above or at the current scroll position (+margin for better UX)
+      if (headingPosition <= scrollPosition + 100) {
         currentHeading = {
           id: heading.id,
           text: heading.textContent,
           element: heading
         };
-      } else {
+      }
+      // If we've gone past the viewport, stop searching
+      else if (headingPosition > scrollPosition + containerHeight) {
         break;
       }
     }
     
-    return currentHeading || { id: headings[0].id, text: headings[0].textContent, element: headings[0] };
+    // If no heading is found, default to the first one
+    return currentHeading || (headings.length ? { 
+      id: headings[0].id, 
+      text: headings[0].textContent, 
+      element: headings[0] 
+    } : null);
   }
   
   /**
@@ -1149,52 +1790,87 @@ Remember that JavaScript's prototype system is different from classical inherita
    * Apply saved highlights to the UI
    */
   applyHighlights() {
-    // Apply highlights based on saved paths
-    this.highlights.forEach(highlight => {
-      if (highlight.bookId !== this.currentBook.id) return;
+    try {
+      if (!this.currentBook || !this.highlights.length) return;
       
-      // Try to find the element by ID first
-      let element = document.getElementById(highlight.id);
+      const contentArea = document.getElementById('ebook-content');
+      if (!contentArea) return;
       
-      // If not found, try to reconstruct from path
-      if (!element && highlight.path) {
+      // Find highlights for current book
+      const bookHighlights = this.highlights.filter(h => h.bookId === this.currentBook.id);
+      if (!bookHighlights.length) return;
+      
+      // Apply each highlight
+      bookHighlights.forEach(highlight => {
         try {
-          let current = document.getElementById('ebook-content');
+          // Simple highlighting based on text content rather than path
+          const textToHighlight = highlight.text;
           
-          for (const step of highlight.path) {
-            let count = step.index;
-            let child = current.firstElementChild;
-            
-            while (child && count > 0) {
-              if (child.nodeName.toLowerCase() === step.tag) count--;
-              if (count > 0) child = child.nextElementSibling;
+          if (!textToHighlight) return;
+          
+          // Find text nodes that contain this text
+          const textNodes = [];
+          const walker = document.createTreeWalker(
+            contentArea,
+            NodeFilter.SHOW_TEXT,
+            {
+              acceptNode(node) {
+                // Skip nodes in pre/code blocks
+                if (node.parentNode.closest('pre, code')) {
+                  return NodeFilter.FILTER_REJECT;
+                }
+                return node.textContent.includes(textToHighlight) 
+                  ? NodeFilter.FILTER_ACCEPT 
+                  : NodeFilter.FILTER_REJECT;
+              }
             }
-            
-            if (!child || child.nodeName.toLowerCase() !== step.tag) {
-              throw new Error('Path navigation failed');
-            }
-            
-            current = child;
+          );
+          
+          let node;
+          while ((node = walker.nextNode())) {
+            textNodes.push(node);
           }
           
-          if (current) {
-            const span = document.createElement('span');
-            span.className = 'ebook-highlight';
-            span.id = highlight.id;
-            span.textContent = highlight.text;
+          // Apply highlight to found nodes
+          textNodes.forEach(textNode => {
+            const text = textNode.textContent;
+            const index = text.indexOf(textToHighlight);
             
-            // Replace text with highlighted version
-            if (current.nodeType === Node.TEXT_NODE) {
-              current.parentNode.replaceChild(span, current);
-            } else {
-              current.innerHTML = `<span class="ebook-highlight" id="${highlight.id}">${current.innerHTML}</span>`;
+            if (index !== -1) {
+              // Split the text node into three parts
+              const before = text.substring(0, index);
+              const highlighted = text.substring(index, index + textToHighlight.length);
+              const after = text.substring(index + textToHighlight.length);
+              
+              const fragment = document.createDocumentFragment();
+              
+              // Add the text before the highlight
+              if (before) {
+                fragment.appendChild(document.createTextNode(before));
+              }
+              
+              // Create the highlighted span
+              const highlightSpan = document.createElement('span');
+              highlightSpan.className = 'ebook-highlight';
+              highlightSpan.textContent = highlighted;
+              fragment.appendChild(highlightSpan);
+              
+              // Add the text after the highlight
+              if (after) {
+                fragment.appendChild(document.createTextNode(after));
+              }
+              
+              // Replace the text node with our fragment
+              textNode.parentNode.replaceChild(fragment, textNode);
             }
-          }
+          });
         } catch (error) {
-          console.error('Error applying highlight:', error);
+          console.error('Error applying individual highlight:', error);
         }
-      }
-    });
+      });
+    } catch (error) {
+      console.error('Error applying highlights:', error);
+    }
   }
   
   /**
@@ -1280,8 +1956,18 @@ Remember that JavaScript's prototype system is different from classical inherita
     
     const contentArea = document.getElementById('ebook-content');
     if (contentArea) {
+      // Ensure lastScrollPosition is initialized
+      if (!this.lastScrollPosition) {
+        this.lastScrollPosition = {};
+      }
+      
       this.lastScrollPosition[this.currentBook.id] = contentArea.scrollTop;
-      localStorage.setItem('ebook-scroll', JSON.stringify(this.lastScrollPosition));
+      
+      try {
+        localStorage.setItem('ebook-scroll', JSON.stringify(this.lastScrollPosition));
+      } catch (e) {
+        console.error('Error saving scroll position to localStorage:', e);
+      }
     }
   }
   
@@ -1292,15 +1978,19 @@ Remember that JavaScript's prototype system is different from classical inherita
     if (!this.currentBook) return;
     
     try {
-      if (!this.lastScrollPosition) {
-        this.lastScrollPosition = JSON.parse(localStorage.getItem('ebook-scroll')) || {};
+      const scrollData = localStorage.getItem('ebook-scroll');
+      if (scrollData) {
+        this.lastScrollPosition = JSON.parse(scrollData) || {};
       }
       
       const contentArea = document.getElementById('ebook-content');
       if (contentArea && this.lastScrollPosition[this.currentBook.id]) {
+        // Use a setTimeout to ensure content is fully rendered
         setTimeout(() => {
           contentArea.scrollTop = this.lastScrollPosition[this.currentBook.id];
-        }, 100);
+          // Update TOC highlighting based on restored position
+          this.updateCurrentTocItem();
+        }, 150);
       }
     } catch (error) {
       console.error('Error restoring scroll position:', error);
@@ -1407,26 +2097,81 @@ Remember that JavaScript's prototype system is different from classical inherita
   bindEvents() {
     // Most button handlers are now attached directly in addReadingControls
     
-    // Save scroll position when user scrolls
+    // Save scroll position and update TOC when user scrolls
     const contentArea = document.getElementById('ebook-content');
     if (contentArea) {
+      // Use throttled scroll handler to improve performance
+      let scrollTimer;
       contentArea.addEventListener('scroll', () => {
-        this.saveScrollPosition();
-        this.updateCurrentTocItem();
+        if (scrollTimer) clearTimeout(scrollTimer);
+        
+        scrollTimer = setTimeout(() => {
+          this.saveScrollPosition();
+          this.updateCurrentTocItem();
+        }, 100); // Throttle to every 100ms
       });
+    }
+    
+    // Use Intersection Observer to highlight current heading in TOC
+    if (window.IntersectionObserver) {
+      this.setupHeadingObserver();
     }
   }
   
   /**
-   * Update which TOC item is highlighted based on scroll position
+   * Set up an observer to watch headings and update TOC accordingly
    */
-  updateCurrentTocItem() {
-    const currentHeading = this.getCurrentHeading();
-    if (!currentHeading) return;
+  setupHeadingObserver() {
+    const contentArea = document.getElementById('ebook-content');
+    if (!contentArea) return;
     
-    const tocItem = document.querySelector(`.toc-link[href="#${currentHeading.id}"]`);
-    if (tocItem) {
-      this.highlightCurrentTocItem(tocItem);
+    // Clean up existing observer if any
+    if (this.headingObserver) {
+      this.headingObserver.disconnect();
+    }
+    
+    const headings = document.querySelectorAll('#ebook-content h1, #ebook-content h2, #ebook-content h3');
+    
+    // Create new intersection observer
+    this.headingObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          const tocItem = document.querySelector(`.toc-link[href="#${id}"]`);
+          if (tocItem) {
+            this.highlightCurrentTocItem(tocItem);
+          }
+        }
+      });
+    }, { 
+      rootMargin: '-10% 0px -80% 0px', // Consider a heading "visible" when in the top 20% of the viewport
+      threshold: 0.1
+    });
+    
+    // Observe all headings
+    headings.forEach(heading => {
+      if (heading.id) {
+        this.headingObserver.observe(heading);
+      }
+    });
+  }
+  
+  /**
+   * Clean up resources when switching books or tabs
+   */
+  cleanup() {
+    // Save current state
+    this.saveScrollPosition();
+    
+    // Clean up intersection observer
+    if (this.headingObserver) {
+      this.headingObserver.disconnect();
+    }
+    
+    // Clean up event listeners - not necessary since we're using unique IDs, but good practice
+    const contentArea = document.getElementById('ebook-content');
+    if (contentArea) {
+      // We don't remove scroll listeners as they're bound to DOM elements that will be removed anyway
     }
   }
 
@@ -1509,5 +2254,37 @@ Remember that JavaScript's prototype system is different from classical inherita
     setTimeout(() => {
       document.addEventListener('click', closeDropdown);
     }, 100);
+  }
+
+  /**
+   * Escape HTML special characters
+   * @param {string} html - Raw HTML
+   * @returns {string} - Escaped HTML
+   */
+  escapeHtml(html) {
+    const escapeMap = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return html.replace(/[&<>"']/g, m => escapeMap[m]);
+  }
+
+  /**
+   * Convert string to URL-friendly slug
+   * @param {string} text - Text to slugify
+   * @returns {string} - Slugified text
+   */
+  slugify(text) {
+    return text
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')        // Replace spaces with -
+      .replace(/&/g, '-and-')      // Replace & with 'and'
+      .replace(/[^\w\-]+/g, '')    // Remove all non-word characters
+      .replace(/\-\-+/g, '-');     // Replace multiple - with single -
   }
 }
