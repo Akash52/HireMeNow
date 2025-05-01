@@ -1620,6 +1620,91 @@ header h1 {
   @apply mt-2 w-full py-3 px-4 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors flex items-center justify-center;
   position: relative;
   overflow: hidden;
+  animation: pulse-button 2s infinite;
+}
+
+.run-in-stackblitz-btn:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: 0.5s;
+}
+
+.run-in-stackblitz-btn:hover:after {
+  left: 100%;
+}
+
+.stackblitz-runner-container {
+  @apply w-full border-t border-gray-200 bg-white;
+  min-height: 400px;
+  transition: all 0.3s ease;
+}
+
+.stackblitz-runner-container:not(.hidden) {
+  @apply border-t-2 border-indigo-200 pt-2 mt-4;
+}
+
+.stackblitz-runner-container iframe {
+  @apply w-full border-0;
+  height: 500px;
+}
+
+/* Add pulse animation to run buttons */
+@keyframes pulse-button {
+  0% {
+    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(79, 70, 229, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+  }
+}
+
+/* Code block enhancements */
+#ebook-content pre {
+  @apply my-6 rounded-lg bg-gray-800 text-white overflow-auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+#ebook-content .code-content pre {
+  @apply rounded-t-lg rounded-b-none;
+  margin-bottom: 0;
+}
+
+#ebook-content pre code {
+  @apply block p-4 bg-transparent text-gray-100 text-sm;
+}
+
+/* Dark theme adjustments */
+.dark-theme .stackblitz-container {
+  @apply border-gray-700 bg-gray-800;
+}
+
+.dark-theme .run-in-stackblitz-btn {
+  @apply bg-indigo-700 hover:bg-indigo-800;
+}
+
+.dark-theme .stackblitz-runner-container {
+  @apply border-gray-700 bg-gray-800;
+}
+
+/* Stackblitz Integration Styles - make them more prominent */
+.stackblitz-container {
+  @apply rounded-lg overflow-hidden border-2 border-indigo-200 mb-6 bg-white shadow-md;
+  position: relative;
+}
+
+.run-in-stackblitz-btn {
+  @apply mt-2 w-full py-3 px-4 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors flex items-center justify-center;
+  position: relative;
+  overflow: hidden;
 }
 
 .run-in-stackblitz-btn:after {
@@ -1652,34 +1737,6 @@ header h1 {
   height: 500px;
 }
 
-/* Dark theme adjustments */
-.dark-theme .stackblitz-container {
-  @apply border-gray-700 bg-gray-800;
-}
-
-.dark-theme .run-in-stackblitz-btn {
-  @apply bg-indigo-700 hover:bg-indigo-800;
-}
-
-.dark-theme .stackblitz-runner-container {
-  @apply border-gray-700 bg-gray-800;
-}
-
-/* Add this to make stackblitz buttons more noticeable */
-.code-block-container {
-  @apply relative;
-}
-
-.code-header {
-  @apply sticky top-0 z-10;
-}
-
-.run-in-stackblitz-btn:before {
-  content: "▶";
-  margin-right: 6px;
-  font-size: 12px;
-}
-
 /* Add pulse animation to run buttons */
 @keyframes pulse-button {
   0% {
@@ -1691,10 +1748,6 @@ header h1 {
   100% {
     box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
   }
-}
-
-.run-in-stackblitz-btn {
-  animation: pulse-button 2s infinite;
 }
 
 /* Button press animation */

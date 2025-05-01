@@ -8,7 +8,7 @@ JavaScript's inheritance model is fundamentally different from classical object-
 
 In JavaScript, when you try to access a property or method that doesn't exist on an object, JavaScript automatically looks for it in the object's prototype, and if not found there, it continues up the prototype chain.
 
-```js
+```js stackblitz=true
 // Create a simple object
 const animal = {
   eats: true,
@@ -31,7 +31,7 @@ rabbit.sleep();           // Zzz... (method inherited from animal)
 
 The prototype chain is the series of linked objects that JavaScript traverses when looking for a property. This chain ends when it reaches an object with a null prototype (typically `Object.prototype`).
 
-```js
+```js stackblitz=true
 // A simple visualization of the prototype chain
 const grandparent = { lastName: 'Smith' };
 const parent = Object.create(grandparent);
@@ -52,7 +52,7 @@ console.log(Object.getPrototypeOf(parent) === grandparent); // true
 
 When a property exists on both an object and its prototype, the object's own property takes precedence. This is called property shadowing.
 
-```js
+```js stackblitz=true
 const vehicle = {
   type: 'Vehicle',
   getType() {
@@ -71,7 +71,7 @@ console.log(vehicle.getType()); // 'Vehicle' - uses vehicle's 'type' property
 
 JavaScript provides several ways to work with prototypes:
 
-```js
+```js stackblitz=true
 // Creating an object with a specific prototype
 const animal = { eats: true };
 const dog = Object.create(animal);
@@ -93,18 +93,26 @@ console.log(cat.eats); // true
 
 Modifying prototypes at runtime can impact performance because JavaScript engines optimize based on stable prototype structures:
 
-```js
-// Avoid doing this in performance-critical code
+```js stackblitz=true
+// Example to demonstrate prototype modification impact
+const originalArray = [1, 2, 3];
+console.log("Before modification:", originalArray);
+
+// Not recommended in production code
 Array.prototype.customMethod = function() {
-  // This affects ALL arrays and can slow down your application
+  return this.map(x => x * 2);
 };
+
+console.log("After adding custom method:", originalArray.customMethod());
 
 // Better approach: extend without modifying built-in prototypes
 const enhancedArray = {
   customMethod: function(array) {
-    // Implementation that works on the provided array
+    return array.map(x => x * 2);
   }
 };
+
+console.log("Using separate utility:", enhancedArray.customMethod(originalArray));
 ```
 
 ## Object Creation Patterns
@@ -113,7 +121,7 @@ const enhancedArray = {
 
 `Object.create()` creates a new object with a specified prototype object. This gives you direct control over the prototype chain without using constructors.
 
-```js
+```js stackblitz=true
 // Create a base prototype object with shared functionality
 const vehiclePrototype = {
   start() {
@@ -140,20 +148,21 @@ console.log(car.hasOwnProperty('type')); // true
 
 When multiple objects need to share behavior, placing methods on a prototype is more memory-efficient than duplicating them on each instance:
 
-```js
+```js stackblitz=true
+// Demonstrate memory efficiency with shared prototypes
 // Inefficient approach - each object gets its own copy of methods
 function createCarInefficient(type) {
   return {
     type,
-    start() { console.log('Engine started'); },
-    stop() { console.log('Engine stopped'); }
+    start() { console.log(`${type} engine started`); },
+    stop() { console.log(`${type} engine stopped`); }
   };
 }
 
 // Efficient approach - methods are shared via prototype
 const carMethods = {
-  start() { console.log('Engine started'); },
-  stop() { console.log('Engine stopped'); }
+  start() { console.log(`${this.type} engine started`); },
+  stop() { console.log(`${this.type} engine stopped`); }
 };
 
 function createCarEfficient(type) {
@@ -162,17 +171,28 @@ function createCarEfficient(type) {
   return car;
 }
 
-// Create 1000 cars with each approach
-const inefficientCars = Array.from({ length: 1000 }, () => createCarInefficient('Sedan'));
-const efficientCars = Array.from({ length: 1000 }, () => createCarEfficient('Sedan'));
-// The efficient approach uses significantly less memory
+// Create cars with each approach
+const inefficientCar = createCarInefficient('Sedan');
+const efficientCar = createCarEfficient('SUV');
+
+// Both approaches work the same way
+inefficientCar.start(); // Sedan engine started
+efficientCar.start(); // SUV engine started
+
+// But the efficient approach uses less memory for multiple cars
+console.log("Inefficient car methods are own properties:", 
+            inefficientCar.hasOwnProperty('start')); // true
+console.log("Efficient car methods are inherited:", 
+            !efficientCar.hasOwnProperty('start')); // true
 ```
 
 ### Avoiding Mutable State on Prototypes
 
 A common pitfall is placing mutable data on prototypes, which can lead to unexpected behavior:
 
-```js
+```js stackblitz=true
+// Demonstration of mutable data on prototypes issue
+
 // BAD PRACTICE: Mutable data on prototype
 function BadCar() {}
 BadCar.prototype.features = ['GPS']; // Shared array - will be modified by all instances
@@ -180,8 +200,14 @@ BadCar.prototype.features = ['GPS']; // Shared array - will be modified by all i
 const car1 = new BadCar();
 const car2 = new BadCar();
 
+console.log("Before modification:");
+console.log("Car1 features:", car1.features); // ['GPS']
+console.log("Car2 features:", car2.features); // ['GPS']
+
 car1.features.push('Bluetooth');
-console.log(car2.features); // ['GPS', 'Bluetooth'] - Unexpectedly modified!
+console.log("\nAfter modification:");
+console.log("Car1 features:", car1.features); // ['GPS', 'Bluetooth'] 
+console.log("Car2 features:", car2.features); // ['GPS', 'Bluetooth'] - Unexpectedly modified!
 
 // GOOD PRACTICE: Keep mutable state on instances
 function GoodCar() {
@@ -191,8 +217,14 @@ function GoodCar() {
 const car3 = new GoodCar();
 const car4 = new GoodCar();
 
+console.log("\nGood practice - Before modification:");
+console.log("Car3 features:", car3.features); // ['GPS']
+console.log("Car4 features:", car4.features); // ['GPS']
+
 car3.features.push('Bluetooth');
-console.log(car4.features); // ['GPS'] - Not affected
+console.log("\nGood practice - After modification:");
+console.log("Car3 features:", car3.features); // ['GPS', 'Bluetooth']
+console.log("Car4 features:", car4.features); // ['GPS'] - Not affected
 ```
 
 ### Function Constructors and Prototypes

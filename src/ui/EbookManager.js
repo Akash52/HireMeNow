@@ -107,6 +107,74 @@ export class EbookManager {
   }
 
   /**
+   * Fetch ebook content from URL
+   * @param {string} url - URL to fetch from
+   * @returns {Promise<string>} - The content of the ebook
+   */
+  async fetchEbookContent(url) {
+    try {
+      // Add cache busting to prevent caching issues
+      const cacheBuster = `?_=${Date.now()}`;
+      const response = await fetch(url + cacheBuster);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ebook content: ${response.status} ${response.statusText}`);
+      }
+      
+      const content = await response.text();
+      return content;
+    } catch (error) {
+      console.error('Error fetching ebook content:', error);
+      throw new Error(`Failed to load ebook content: ${error.message}`);
+    }
+  }
+
+  /**
+   * Load an ebook by URL
+   * @param {string} url - URL of the ebook content
+   * @param {Object} metadata - Ebook metadata
+   * @returns {Promise<Object>} - Processed ebook data
+   */
+  async loadEbookFromUrl(url, metadata) {
+    try {
+      const content = await this.fetchEbookContent(url);
+      
+      if (!content || content.trim() === '') {
+        throw new Error('Empty or invalid ebook content');
+      }
+      
+      // Create temporary ebook object
+      const ebook = {
+        id: metadata.id || `ebook-${Date.now()}`,
+        title: metadata.title || 'Untitled Ebook',
+        description: metadata.description || '',
+        author: metadata.author || 'Unknown Author',
+        coverImage: metadata.coverImage || '/images/default-book-cover.jpg',
+        content: content,
+        url: url,
+        readTimeMinutes: this.estimateReadTime(content),
+        dateAdded: metadata.dateAdded || new Date().toISOString()
+      };
+      
+      return ebook;
+    } catch (error) {
+      console.error('Error loading ebook from URL:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Estimate read time for content
+   * @param {string} content - Content to estimate time for
+   * @returns {number} - Estimated read time in minutes
+   */
+  estimateReadTime(content) {
+    const wordsPerMinute = 200;
+    const words = content.split(/\s+/).length;
+    return Math.ceil(words / wordsPerMinute);
+  }
+
+  /**
    * Load eBook catalog
    */
   async loadCatalog() {
@@ -455,7 +523,7 @@ export class EbookManager {
           acceptNode(node) {
             return node.textContent.trim() !== ''
               ? NodeFilter.FILTER_ACCEPT
-              : NodeFilter.FILTER_REJECT;
+              : NodeFilter.FILTER_REJECT
           }
         }
       );
