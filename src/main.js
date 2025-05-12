@@ -61,11 +61,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Make tourManager globally accessible
     window.tourManager = tourManager;
     
-    // Initialize tour components
+    // Initialize tour components with simplified versions (no driver.js)
     tourManager.init();
     helpButton.init();
     
-    console.log('Tour management initialized');
+    console.log('Tour management initialized with simplified help system');
   }, 100);
   
   // Initialize PWA update notification

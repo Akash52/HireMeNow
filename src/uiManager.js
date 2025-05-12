@@ -1,5 +1,3 @@
-// Remove Driver.js imports
-// import { driver } from 'driver.js';
 import { BaseUIManager } from './ui/BaseUIManager.js';
 import { AnimationManager } from './ui/AnimationManager.js';
 import { AccessibilityManager } from './ui/AccessibilityManager.js';
@@ -8,8 +6,6 @@ import { QuestionManager } from './ui/QuestionManager.js';
 import { ResultManager } from './ui/ResultManager.js';
 import { ShareManager } from './ui/ShareManager.js';
 import NotificationManager from './ui/NotificationManager.js';
-// Remove Driver.js CSS import
-// import 'driver.js/dist/driver.css';
 
 /**
  * Main UI Manager that integrates all UI modules
@@ -87,38 +83,38 @@ export default class UIManager {
   
   // Get the current visible section
   getCurrentSection() {
-    const sections = ['quiz-container', 'interview-container', 'ebook-container'];
-    for (const id of sections) {
-      const element = document.getElementById(id);
-      if (element && !element.classList.contains('hidden')) {
-        return id;
-      }
+    if (!document.getElementById('quiz-container')?.classList.contains('hidden')) {
+      return 'quiz-container';
+    } else if (!document.getElementById('interview-container')?.classList.contains('hidden')) {
+      return 'interview-container';
+    } else if (!document.getElementById('ebook-container')?.classList.contains('hidden')) {
+      return 'ebook-container';
     }
     return 'quiz-container'; // Default
   }
   
   // Get help content based on current section
   getHelpContentForSection(sectionId) {
-    switch (sectionId) {
+    switch(sectionId) {
       case 'quiz-container':
         return {
-          title: 'Quiz Section Help',
-          description: 'Select a topic and difficulty, then answer questions to test your knowledge.'
+          title: 'Quiz Help',
+          description: 'This section allows you to test your knowledge with interactive quizzes. Select a quiz type and difficulty, then click Start to begin. Answer each question and see your results at the end.'
         };
       case 'interview-container':
         return {
           title: 'Interview Prep Help',
-          description: 'Browse topics and questions to prepare for your technical interviews.'
+          description: 'This section contains common interview questions and detailed explanations. Browse through different topics, mark questions as completed, and search for specific topics.'
         };
       case 'ebook-container':
         return {
-          title: 'eBook Section Help',
-          description: 'Browse and read technical eBooks to enhance your knowledge.'
+          title: 'eBook Help',
+          description: 'Browse and read interactive eBooks to help with your interview preparation. Use the library to find books and the reader to study specific topics.'
         };
       default:
         return {
-          title: 'Help',
-          description: 'Navigate through different sections using the tabs at the top.'
+          title: 'Application Help',
+          description: 'Welcome to HireMeNow! This application helps you prepare for technical interviews through quizzes, interview questions, and study materials.'
         };
     }
   }
@@ -202,6 +198,42 @@ export default class UIManager {
       'info', 
       3000
     );
+  }
+
+  // Get help text for specific elements
+  getHelpInfoForElement(elementId) {
+    const helpTexts = {
+      'quiz-type-container': {
+        title: 'Quiz Type',
+        description: 'Select the programming language or topic for your quiz.',
+      },
+      'difficulty-container': {
+        title: 'Difficulty Level',
+        description: 'Choose how challenging you want the questions to be.',
+      },
+      'timer-display': {
+        title: 'Timer',
+        description: 'Shows the remaining time for the current question.',
+      },
+      'options-container': {
+        title: 'Answer Options',
+        description: 'Select the correct answer from these options.',
+      },
+      'explanation-container': {
+        title: 'Explanation',
+        description: 'Detailed explanation of the correct answer.',
+      },
+      'progress-bar': {
+        title: 'Progress',
+        description: 'Shows your progress through the quiz.',
+      },
+      // Add more elements as needed
+    };
+    
+    return helpTexts[elementId] || { 
+      title: 'Help', 
+      description: 'No specific help available for this element.'
+    };
   }
 
   // Initialize tour functionality

@@ -40,7 +40,6 @@
     "vite-plugin-pwa": "^1.0.0"
   },
   "dependencies": {
-    "driver.js": "^1.3.5",
     "highlight.js": "^11.11.1"
   }
 }

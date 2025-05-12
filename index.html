@@ -1411,32 +1411,20 @@
       }
     </style>
 
-    <!-- Add Driver.js availability check -->
+    <!-- Add this before the closing </body> tag -->
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        // Check if driver.js is available after a small delay
-        setTimeout(() => {
-          // Check if driver is available in window scope
-          if (typeof driver === 'undefined') {
-            console.error('Warning: driver.js is not loaded in global scope. Tours may not work correctly.');
-            
-            // Try to patch it from UIManager if available
-            if (window.uiManager && typeof window.uiManager.startTour === 'function') {
-              console.log('Attempting to make driver globally available from UIManager');
-              
-              // Export the driver function from uiManager to global scope as a fallback
-              window.driver = function(config) {
-                const tourInstance = window.uiManager.activeTour;
-                window.uiManager.startTour(config.steps || []);
-                return window.uiManager.activeTour || tourInstance;
-              };
-              
-              console.log('Driver.js patched from UIManager');
+        // Initialize help button functionality
+        const helpIcon = document.getElementById('help-icon');
+        if (helpIcon && window.uiManager) {
+          helpIcon.addEventListener('click', () => {
+            if (typeof window.uiManager.showSimpleHelp === 'function') {
+              window.uiManager.showSimpleHelp();
+            } else if (typeof window.uiManager.startMainTour === 'function') {
+              window.uiManager.startMainTour();
             }
-          } else {
-            console.log('Driver.js is properly loaded');
-          }
-        }, 500);
+          });
+        }
       });
     </script>
 
@@ -1459,45 +1447,16 @@
         }
       }
       
-      /* Ensure tour popover appears on top of everything */
-      .driver-popover {
-        z-index: 9999 !important;
-      }
-      
-      /* Ensure help button is always visible */
-      #floating-help-button {
-        z-index: 9000;
-      }
-    </style>
-
-    <!-- Add CSS for custom tooltips (replacing Driver.js) -->
-    <style>
-      #floating-help-button {
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.5);
-        animation: pulse 2s infinite;
-      }
-      
-      @keyframes pulse {
-        0% {
-          box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7);
-        }
-        70% {
-          box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
-        }
-        100% {
-          box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
-        }
-      }
-      
-      /* Custom tooltips and help styling */
+      /* Add CSS for custom tooltips */
       .custom-tooltip {
         position: absolute;
-        background-color: white;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        background: white;
         border-radius: 8px;
-        padding: 12px 16px;
-        z-index: 9999;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        padding: 15px;
         max-width: 300px;
+        z-index: 9999;
+        border: 1px solid #e2e8f0;
       }
       
       .custom-tooltip-title {
@@ -1526,23 +1485,5 @@
         z-index: 9000;
       }
     </style>
-
-    <!-- Remove Driver.js availability check -->
-    <!-- Instead add simple help initialization -->
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // Initialize help button functionality
-        const helpIcon = document.getElementById('help-icon');
-        if (helpIcon && window.uiManager) {
-          helpIcon.addEventListener('click', () => {
-            if (typeof window.uiManager.showSimpleHelp === 'function') {
-              window.uiManager.showSimpleHelp();
-            } else if (typeof window.uiManager.startMainTour === 'function') {
-              window.uiManager.startMainTour();
-            }
-          });
-        }
-      });
-    </script>
   </body>
 </html>
