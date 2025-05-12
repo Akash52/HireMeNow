@@ -60,6 +60,7 @@ export class CodeExampleManager {
     }
   }
 
+  // Simplified code block styles to avoid duplication
   addCodeBlockStyles() {
     const styleEl = document.createElement('style');
     styleEl.textContent = `
@@ -91,33 +92,28 @@ export class CodeExampleManager {
         padding-left: 1rem;
       }
       
-      /* Code comment enhancements */
+      /* Syntax highlighting */
       .hljs-comment, .hljs-quote {
         color: #6a9955;
         font-style: italic;
       }
       
-      /* Keywords, functions, etc. */
       .hljs-keyword, .hljs-selector-tag, .hljs-built_in, .hljs-name, .hljs-tag {
         color: #569CD6;
       }
       
-      /* Variables, attributes */
       .hljs-variable, .hljs-template-variable, .hljs-attr {
         color: #9CDCFE;
       }
       
-      /* Strings */
       .hljs-string, .hljs-literal, .hljs-template-tag, .hljs-template-variable {
         color: #CE9178;
       }
       
-      /* Numbers, boolean */
       .hljs-number, .hljs-attribute, .hljs-addition, .hljs-boolean {
         color: #B5CEA8;
       }
       
-      /* Class names, types */
       .hljs-title, .hljs-section, .hljs-selector-id, .hljs-selector-class, .hljs-type, .hljs-params {
         color: #4EC9B0;
       }
@@ -146,7 +142,7 @@ export class CodeExampleManager {
       editButton.className =
         'edit-code-btn absolute top-2 right-2 bg-gray-700 text-white px-2 py-1 rounded text-xs flex items-center';
       editButton.innerHTML = '<i class="fas fa-edit mr-1"></i> Edit';
-
+      
       editButton.addEventListener('click', () => {
         const codeBlock = codeElement.querySelector('code');
         const currentCode = codeBlock.textContent;

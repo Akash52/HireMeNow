@@ -355,8 +355,7 @@ export class QuizManager {
       }
     });
   }
-
-  // Make sure we have a stopTimer method if it's not already defined
+  
   stopTimer() {
     if (this.timerManager) {
       this.timerManager.stopTimer();

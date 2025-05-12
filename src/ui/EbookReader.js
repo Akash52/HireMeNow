@@ -693,7 +693,6 @@ Remember that JavaScript's prototype system is different from classical inherita
     // First pass: extract TOC
     const lines = markdown.split('\n');
     let inCodeBlock = false;
-    let currentCodeBlock = null;  // Initialize currentCodeBlock
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -721,7 +720,6 @@ Remember that JavaScript's prototype system is different from classical inherita
     inCodeBlock = false;
     let insideSection = false;
     let currentChapter = null;
-    currentCodeBlock = null;  // Reset currentCodeBlock
     
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i];
@@ -737,28 +735,17 @@ Remember that JavaScript's prototype system is different from classical inherita
           enhancedContent += `<div class="stackblitz-container" data-config="${this.escapeHtml(stackblitzConfig)}">`;
           enhancedContent += '<div class="code-content">';
           enhancedContent += line + '\n';
-          currentCodeBlock = { isStackblitz: true, content: '' };
         } else {
           enhancedContent += line + '\n';
         }
         
         // Handle closing of a Stackblitz code block
-        if (!inCodeBlock && currentCodeBlock && currentCodeBlock.isStackblitz) {
+        if (!inCodeBlock) {
           enhancedContent += '</div>'; // Close code-content div
           enhancedContent += '<div class="stackblitz-runner-container hidden"></div>';
           enhancedContent += '<button class="run-in-stackblitz-btn">Run Code</button>';
           enhancedContent += '</div>'; // Close stackblitz-container div
-          currentCodeBlock = null;
         }
-        continue;
-      }
-      
-      // Track if we're in a Stackblitz block
-      if (inCodeBlock) {
-        if (currentCodeBlock && currentCodeBlock.isStackblitz) {
-          currentCodeBlock.content += line + '\n';
-        }
-        enhancedContent += line + '\n';
         continue;
       }
       

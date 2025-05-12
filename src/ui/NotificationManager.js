@@ -29,7 +29,7 @@ class NotificationManager {
 
   getIconSvg(type) {
     if (type === 'success') {
-      return '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>';
+      return '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>';
     }
     if (type === 'error') {
       return '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>';
@@ -44,18 +44,15 @@ class NotificationManager {
     if (!this.toastContainer) return null;
 
     const toast = document.createElement('div');
-    toast.className = `transform transition-all duration-300 ease-in-out opacity-100 scale-100`;
-
+    toast.className = `toast flex items-center p-3 mb-3 bg-white border rounded-lg shadow-lg transform translate-x-full transition-all duration-300 ${this.getBorderColorClass(type)}`;
     toast.innerHTML = `
-      <div class="flex items-center w-full max-w-xs p-4 rounded-lg shadow-lg bg-white border-l-4 ${this.getBorderColorClass(type)}">
-        <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-lg ${this.getIconColorClass(type)}">
-          ${this.getIconSvg(type)}
-        </div>
-        <div class="ml-3 text-sm  text-gray-700 font-semibold">${message}</div>
-        <button type="button" class="toast-close ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg p-1.5 hover:bg-gray-100 inline-flex items-center justify-center" aria-label="Close notification">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-        </button>
+      <div class="mr-2 ${this.getIconColorClass(type)}">
+        ${this.getIconSvg(type)}
       </div>
+      <div class="flex-grow text-sm text-gray-800">${message}</div>
+      <button class="toast-close ml-2 text-gray-400 hover:text-gray-600">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+      </button>
     `;
 
     this.toastContainer.appendChild(toast);
